@@ -14,11 +14,11 @@ export class Emprestimo {
  this.id = id;
  this.estoque_id = estoque_id;
  this.usuario_id = usuario_id;
- this.data_emprestimo = data_emprestimo;
- this.data_devolucao = data_devolucao;
- this.data_entrega =data_entrega;
- this.dias_atraso=dias_atraso;
- this.suspensao_ate = suspensao_ate;
+ this.data_emprestimo = new Date();
+ this.data_devolucao = new Date();
+ this.data_entrega = new Date();
+ this.dias_atraso = dias_atraso;
+ this.suspensao_ate = new Date();
 
  }
  }
