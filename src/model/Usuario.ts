@@ -1,17 +1,17 @@
 
 export class Usuario {
-id: number;
- nome: string;
- cpf: string;
- ativo: boolean;
- categoria_id: number;
- curso_id:number;
- status: 'ativo' | 'inativo' | 'suspenso';
- diaSuspensao: number;
+id?: number;
+ nome?: string;
+ cpf?: string;
+ ativo?: boolean;
+ categoria_id?: number;
+ curso_id?:number;
+ status?: 'ativo' | 'inativo' | 'suspenso';
+ diaSuspensao?:number;
 
 
  
- constructor(   id: number,nome: string, cpf:string,ativo:boolean,  categoria_id:number,curso_id:number,diaSuspensao:number) {
+ constructor(   id: number,nome: string, cpf:string,ativo:boolean,  categoria_id:number,curso_id:number) {
  this.id=id;
  this.nome = nome;
  this.cpf = cpf;
@@ -19,7 +19,6 @@ id: number;
  this.curso_id = curso_id;
  this.categoria_id = categoria_id;
  this.status ='ativo';
- this.diaSuspensao = 0;
  }
  }
 

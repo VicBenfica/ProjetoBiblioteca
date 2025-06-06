@@ -28,3 +28,4 @@ export class Emprestimo {
     this.suspensao_ate = suspensao_ate;
   }
 }
+//funcao calcular devolucao

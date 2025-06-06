@@ -24,10 +24,43 @@ export class EmprestimoRepository {
     new Date(),                // data_entrega 
     0,                         // dias_atraso
     new Date()                 // suspensao_ate 
-  );
-  this.emprestimos.push(novo);
-  return novo;
-}
+    );
+    this.emprestimos.push(novo);
+    return novo;
+    }
 
+    listarEmprestimos(): Emprestimo[] {
+    return this.emprestimos;
+    }
+
+
+    registrarDevolucao(id: number): Emprestimo | undefined {
+    const emprestimo = this.emprestimos.find(e => e.id === id);
+
+    if (!emprestimo) {
+        console.log("Empréstimo não encontrado.");
+        return undefined;
+    }
+
+    const agora = new Date();
+    emprestimo.data_entrega = agora;
+
+    const diffTime = agora.getTime() - emprestimo.data_devolucao.getTime();
+    const diasAtraso = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+
+    emprestimo.dias_atraso = diasAtraso;
+
+    if (diasAtraso > 0) {
+        const suspensao = new Date();
+        suspensao.setDate(suspensao.getDate() + diasAtraso * 3);
+        emprestimo.suspensao_ate = suspensao;
+    } else {
+        emprestimo.suspensao_ate = emprestimo.data_entrega; 
+    }
+
+    return emprestimo;
+    }
+
+    //FILTRAR id, usuario ativo, usuario atrasado, exemplar ativo, verificar usuario suspenso
 
 }

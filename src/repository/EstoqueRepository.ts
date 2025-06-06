@@ -1,8 +1,17 @@
 import { Estoque }  from "../model/Estoque";
+import { Livro }  from "../model/Livro";
+
+    type DadosAtualizacaoEstoque = {
+     id?: number;
+    livro_id?: number;
+    quantidade?: number;
+    quantidade_emprestada?: number;
+    disponivel?: boolean;
+    }
 
 export class EstoqueRepository {
     private static instance: EstoqueRepository;
-    private emprestimos: Estoque[] = [];
+    private estoques: Estoque[] = [];
 
     private constructor() {}
 
@@ -12,4 +21,10 @@ export class EstoqueRepository {
     }
     return this.instance;
     }
+
+    insereLivro(livro:Livro){
+    this.estoques.push(livro);
+    }
+        
+        
 }
