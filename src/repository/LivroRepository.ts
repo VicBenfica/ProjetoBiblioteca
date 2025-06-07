@@ -5,7 +5,6 @@ export class LivroRepository {
   private static instance: LivroRepository;
   private livros: Livro[] = [];
 
-  private constructor() {}
 
   public static getInstance(): LivroRepository {
     if (!this.instance) {
@@ -18,9 +17,10 @@ export class LivroRepository {
     this.livros.push(livro);
   }
 
-  listarLivros(): Livro[] {
-    return this.livros;
-  }
+  listarLivros(id: number): Livro | undefined {
+            return this.livros.find(livro => livro.id === id);
+        }
+  
 
   buscarIndexPorId(id: number): number {
     return this.livros.findIndex(l => l.id === id);

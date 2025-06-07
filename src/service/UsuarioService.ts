@@ -7,10 +7,9 @@ type DadosAtualizacaoUsuario = {
     id?: number;
     nome?: string;
     cpf?: string;
-    ativo?: boolean;
     categoria_id?: number;
     curso_id?: number;
-    status?: 'ativo' | 'inativo' | 'suspenso';
+    ativo?: 'ativo' | 'inativo' | 'suspenso';
     diaSuspensao?: number;
 };
 
@@ -21,7 +20,7 @@ type DadosAtualizacaoUsuario = {
 
         novoUsuario(data: any): Usuario {
         // Validação de campos obrigatórios
-        if (!data.nome || !data.cpf || data.email || data.categoria_id === undefined || data.curso_id === undefined) {
+        if (!data.nome || !data.cpf || !data.email || data.categoria_id === undefined || data.curso_id === undefined) {
         throw new Error("Favor informar nome, cpf, email, categoria e curso.");
         }
 
@@ -70,10 +69,9 @@ type DadosAtualizacaoUsuario = {
             id: novosDados.id ?? usuarioAtual.id,
             nome: novosDados.nome ?? usuarioAtual.nome,
             cpf: novosDados.cpf ?? usuarioAtual.cpf,
-            ativo: novosDados.ativo ?? usuarioAtual.ativo,
             categoria_id: novosDados.categoria_id ?? usuarioAtual.categoria_id,
             curso_id: novosDados.curso_id ?? usuarioAtual.curso_id,
-            status: novosDados.status ?? usuarioAtual.status,
+            ativo: novosDados.ativo ?? usuarioAtual.ativo,
             diaSuspensao: novosDados.diaSuspensao ?? usuarioAtual.diaSuspensao,
         };
 
