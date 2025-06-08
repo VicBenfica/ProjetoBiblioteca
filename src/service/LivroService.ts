@@ -32,7 +32,7 @@ export class LivroService {
             data.edicao,
             data.editora,
             data.categoria_id
-                            // status inicial
+            // status inicial
         );                  // dia de suspensão
 
         // Inserção no repositório

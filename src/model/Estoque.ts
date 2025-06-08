@@ -1,7 +1,7 @@
 
 export class Estoque {
- id: number;
- livro_id: number;
+ id: number; //codigo
+ livro_id: number; //isbn
  quantidade: number;
  quantidade_emprestada: number;
  disponivel: boolean;

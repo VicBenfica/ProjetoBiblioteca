@@ -1,6 +1,6 @@
 
 import express from "express"
-import { UsuarioController } from "./controller/UsuarioControllerController"
+import { UsuarioController } from "./controller/UsuarioController"
 
 const usuarioController = new UsuarioController()
 

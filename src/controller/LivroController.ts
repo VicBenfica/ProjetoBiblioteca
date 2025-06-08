@@ -1,18 +1,17 @@
 import { LivroService } from "../service/LivroService";
-import { EmprestimoRepository } from "../repository/EmprestimoRepository";
-
+import { EstoqueRepository } from "../repository/EstoqueRepository";
 import { Request, Response } from "express";
 
-export class LivroController{
+export class LivroController {
     private livroService = new LivroService()
 
-    criarLivro(req:Request, res:Response):void{
-        try{
-            const usuario = this.livroService.novoLivro(req.body)
-            res.status(201).json(usuario)
-        }catch(error: unknown){
-            let message: string = "Não foi possível criar o registro!!"
-            if( error instanceof Error){
+    criarLivro(req: Request, res: Response): void {
+        try {
+            const livro = this.livroService.novoLivro(req.body)
+            res.status(201).json(livro)
+        } catch (error: unknown) {
+            let message: string = "Não foi possível inserir livro!!"
+            if (error instanceof Error) {
                 message = error.message
             }
             res.status(400).json({
@@ -21,32 +20,41 @@ export class LivroController{
         }
     }
 
-    removerUsuario(req:Request, res:Response):void{
-        try{
-            const emprestimos = EmprestimoRepository.getInstance().listarEmprestimos();
-
-            const usuario = this.usuarioService.removeUsuarioPorCpf(req.body.cpf, emprestimos )
-            res.status(201).json(usuario)
-        }catch(error: unknown){
-            let message: string = "Não foi possível remover o usuario!!"
-            if( error instanceof Error){
-                message = error.message
+    removerLivro(req: Request, res: Response): void {
+        try {
+            const id = Number(req.body.id);
+            if (!id) {
+                res.status(400).json({ message: "ID inválido!" });
+                return;
             }
-            res.status(400).json({
-                message: message
-            })
+
+            const estoques = EstoqueRepository.getInstance().listarEstoques(); // correto
+            const removido = this.livroService.removeLivro(id, estoques); // correto
+
+            if (!removido) {
+                res.status(400).json({ message: "Não foi possível remover o livro, ele pode estar emprestado." });
+            } else {
+                res.status(200).json({ message: "Livro removido com sucesso." });
+            }
+
+        } catch (error: unknown) {
+            let message: string = "Erro ao remover o livro.";
+            if (error instanceof Error) {
+                message = error.message;
+            }
+            res.status(400).json({ message });
         }
     }
 
-    atualizarNovoUsuario(req:Request, res:Response):void{
-        try{
-            const cpf = req.params.cpf;
+    atualizarNovoLivro(req: Request, res: Response): void {
+        try {
+            const id = Number(req.params.id);
             const novosDados = req.body;
-            const usuario = this.usuarioService.atualizarUsuario(cpf, novosDados )
-            res.status(201).json(usuario)
-        }catch(error: unknown){
-            let message: string = "Não foi possível atualizar o usuario!!"
-            if( error instanceof Error){
+            const livro = this.livroService.atualizarLivro(id, novosDados)
+            res.status(201).json(livro)
+        } catch (error: unknown) {
+            let message: string = "Não foi possível atualizar o livro!!"
+            if (error instanceof Error) {
                 message = error.message
             }
             res.status(400).json({
@@ -55,15 +63,15 @@ export class LivroController{
         }
     }
 
-    detalharUsuario(req:Request, res:Response):void{
-        try{
-            const cpf = req.params.cpf;
-            
-            const usuario = this.usuarioService.detalhesUsuario(cpf)
-            res.status(201).json(usuario)
-        }catch(error: unknown){
-            let message: string = "Não foi possível detalhar o usuario!!"
-            if( error instanceof Error){
+    detalharNovoLivro(req: Request, res: Response): void {
+        try {
+            const id = Number(req.params.id);
+
+            const livro = this.livroService.detalhesLivro(id)
+            res.status(201).json(livro)
+        } catch (error: unknown) {
+            let message: string = "Não foi possível detalhar o livro!!"
+            if (error instanceof Error) {
                 message = error.message
             }
             res.status(400).json({
@@ -72,7 +80,7 @@ export class LivroController{
         }
     }
 
-    
+
 
 
 
