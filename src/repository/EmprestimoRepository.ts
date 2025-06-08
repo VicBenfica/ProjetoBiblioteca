@@ -1,66 +1,39 @@
-import { Emprestimo }  from "../model/Emprestimo";
+import { Emprestimo } from "../model/Emprestimo";
 
 export class EmprestimoRepository {
-    private static instance: EmprestimoRepository;
-    private emprestimos: Emprestimo[] = [];
-    private idCounter: number = 1; 
+  private static instance: EmprestimoRepository;
+  private emprestimos: Emprestimo[] = [];
+  private idCounter = 1;
 
-    private constructor() {}
+  private constructor() {}
 
-    public static getInstance(): EmprestimoRepository {
-        if (!this.instance) {
-            this.instance = new EmprestimoRepository();
-        }
-        return this.instance;
+  public static getInstance(): EmprestimoRepository {
+    if (!this.instance) {
+      this.instance = new EmprestimoRepository();
     }
+    return this.instance;
+  }
 
-    inserirEmprestimo(cpf: string, codigo: string): Emprestimo {
-  const novo = new Emprestimo(
-    this.idCounter++,
-    Number(cpf),               // usuario_id 
-    Number(codigo),            // estoque_id 
-    new Date(),                // data_emprestimo
-    new Date(),                // data_devolucao 
-    new Date(),                // data_entrega 
-    0,                         // dias_atraso
-    new Date()                 // suspensao_ate 
-    );
-    this.emprestimos.push(novo);
-    return novo;
-    }
+  gerarNovoId(): number {
+    return this.idCounter++;
+  }
 
-    listarEmprestimos(): Emprestimo[] {
+  salvarEmprestimo(emprestimo: Emprestimo): void {
+    this.emprestimos.push(emprestimo);
+  }
+
+  listarEmprestimos(): Emprestimo[] {
     return this.emprestimos;
+  }
+
+  buscarPorId(id: number): Emprestimo | undefined {
+    return this.emprestimos.find(e => e.id === id);
+  }
+
+  atualizarEmprestimo(emprestimo: Emprestimo): void {
+    const index = this.emprestimos.findIndex(e => e.id === emprestimo.id);
+    if (index !== -1) {
+      this.emprestimos[index] = emprestimo;
     }
-
-
-    registrarDevolucao(id: number): Emprestimo | undefined {
-    const emprestimo = this.emprestimos.find(e => e.id === id);
-
-    if (!emprestimo) {
-        console.log("Empréstimo não encontrado.");
-        return undefined;
-    }
-
-    const agora = new Date();
-    emprestimo.data_entrega = agora;
-
-    const diffTime = agora.getTime() - emprestimo.data_devolucao.getTime();
-    const diasAtraso = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
-
-    emprestimo.dias_atraso = diasAtraso;
-
-    if (diasAtraso > 0) {
-        const suspensao = new Date();
-        suspensao.setDate(suspensao.getDate() + diasAtraso * 3);
-        emprestimo.suspensao_ate = suspensao;
-    } else {
-        emprestimo.suspensao_ate = emprestimo.data_entrega; 
-    }
-
-    return emprestimo;
-    }
-
-    //FILTRAR id, usuario ativo, usuario atrasado, exemplar ativo, verificar usuario suspenso
-
+  }
 }

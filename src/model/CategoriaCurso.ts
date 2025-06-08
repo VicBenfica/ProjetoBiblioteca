@@ -1,13 +1,10 @@
 export class CategoriaCurso {
     id: number;
-    nome: string;
+    nome: 'ADS' | 'Pedagogia' | 'Administração';
 
 
-    constructor(
-        id: number,
-        nome: string
-    ) {
+    constructor(id: number, nome: 'ADS' | 'Pedagogia' | 'Administração') {
         this.id = id;
-        this.nome = nome
+        this.nome = nome;
     }
 }
