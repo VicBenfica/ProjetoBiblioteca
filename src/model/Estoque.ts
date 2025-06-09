@@ -1,18 +1,18 @@
 
 export class Estoque {
- id: number; //codigo
- livro_id: number; //isbn
- quantidade: number;
- quantidade_emprestada: number;
- disponivel: boolean;
+    id: number; //codigo
+    livro_id: number; //isbn
+    quantidade: number;
+    quantidade_emprestada: number;
+    disponivel: boolean;
 
 
- 
- constructor(id: number, livro_id: number, quantidade:number,quantidade_emprestada:number,  disponivel:boolean) {
- this.id = id;
- this.livro_id = livro_id;
- this.quantidade = quantidade;
- this.quantidade_emprestada = quantidade_emprestada;
- this.disponivel = disponivel;
- }
- }
+
+    constructor(id: number, livro_id: number, quantidade: number, quantidade_emprestada: number, disponivel: boolean) {
+        this.id = id;
+        this.livro_id = livro_id;
+        this.quantidade = quantidade;
+        this.quantidade_emprestada = quantidade_emprestada;
+        this.disponivel = disponivel;
+    }
+}

@@ -80,6 +80,21 @@ export class LivroController {
         }
     }
 
+    listar(req: Request, res: Response): void {
+        try {
+            const livro = this.livroService.listar(req.body.id)
+            res.status(201).json(livro)
+        } catch (error: unknown) {
+            let message: string = "Não foi possível listar!!"
+            if (error instanceof Error) {
+                message = error.message
+            }
+            res.status(400).json({
+                message: message
+            });
+        }
+    }
+
 
 
 

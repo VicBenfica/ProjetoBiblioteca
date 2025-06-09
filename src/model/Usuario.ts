@@ -8,7 +8,7 @@ export class Usuario {
     curso_id: number;
     ativo: 'ativo' | 'inativo' | 'suspenso';
     diaSuspensao?: number;
-    suspensao_ate?: Date | null; 
+    suspensao_ate?: Date | null;
 
 
 

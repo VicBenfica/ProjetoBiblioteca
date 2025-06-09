@@ -13,10 +13,22 @@ export class UsuarioRepository {
         }
         return this.instance;
     }
-    buscarUsuarioPorId(id: number): Usuario | undefined {
-        return this.usuarios.find(usuario => usuario.id === id);
+    insereUsuario(usuario: Usuario) {
+        this.usuarios.push(usuario);
+    }
+    removerPorIndex(index: number): void {
+        this.usuarios.splice(index, 1);
+    }
+    atualizarUsuarioDiretamente(index: number, usuarioAtualizado: Usuario): void {
+        this.usuarios[index] = usuarioAtualizado;
     }
 
+    detalhesUsuarioPorCpf(cpf: string): Usuario | undefined {
+        return this.usuarios.find(u => u.cpf === cpf);
+    }
+    listarTodosUsuarios(): Usuario[] {
+        return this.usuarios;
+    }
     atualizarUsuarioPorId(id: number, usuarioAtualizado: Usuario): void {
         const index = this.usuarios.findIndex(u => u.id === id);
         if (index !== -1) {
@@ -24,22 +36,10 @@ export class UsuarioRepository {
         }
     }
 
-
-
-
-    insereUsuario(usuario: Usuario) {
-        this.usuarios.push(usuario);
+    listarUsuarioPorId(id: number): Usuario | undefined {
+        return this.usuarios.find(usuario => usuario.id === id);
     }
 
-    listarUsuarios(): Usuario[] {
-        return this.usuarios;
-    }
-
-
-
-    atualizarUsuarioDiretamente(index: number, usuarioAtualizado: Usuario): void {
-        this.usuarios[index] = usuarioAtualizado;
-    }
 
     //Filtra o usuario com seu CPF
     filtraUsuarioPorCpf(cpf: string): Usuario | undefined {
@@ -50,11 +50,7 @@ export class UsuarioRepository {
         return this.usuarios.findIndex(u => u.cpf === cpf);
     }
 
-    removerPorIndex(index: number): void {
-        this.usuarios.splice(index, 1);
-    }
 
-    detalhesUsuarioPorCpf(cpf: string): Usuario | undefined {
-        return this.usuarios.find(u => u.cpf === cpf);
-    }
+
+
 }

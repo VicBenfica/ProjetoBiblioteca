@@ -85,4 +85,7 @@ export class LivroService {
     detalhesLivro(id: number): Livro | undefined {
         return this.livroRepo.buscarLivroPorId(id);
     }
+    listar(id: number) {
+        return this.livroRepo.listarLivros(id);
+    }
 }

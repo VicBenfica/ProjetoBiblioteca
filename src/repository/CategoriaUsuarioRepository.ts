@@ -20,7 +20,7 @@ export class CategoriaUsuarioRepository {
     }
 
     buscarPorId(id: number): CategoriaUsuario | undefined {
-    return this.categoriaUsuarios.find(c => c.id === id);
-  }
+        return this.categoriaUsuarios.find(c => c.id === id);
+    }
 
 }

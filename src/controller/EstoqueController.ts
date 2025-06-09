@@ -30,7 +30,7 @@ export class EstoqueController {
             }
 
             const estoques = EstoqueRepository.getInstance().listarEstoques();
-            const removido = this.estoqueService.removeExemplar(id, estoques); 
+            const removido = this.estoqueService.removeExemplar(id, estoques);
 
             if (!removido) {
                 res.status(400).json({
@@ -81,6 +81,20 @@ export class EstoqueController {
             res.status(400).json({
                 message: message
             })
+        }
+    }
+    listar(req: Request, res: Response): void {
+        try {
+            const estoque = this.estoqueService.listarDisponiveis()
+            res.status(201).json(estoque)
+        } catch (error: unknown) {
+            let message: string = "Não foi possível listar!!"
+            if (error instanceof Error) {
+                message = error.message
+            }
+            res.status(400).json({
+                message: message
+            });
         }
     }
 }

@@ -3,7 +3,7 @@ import { CategoriaLivro } from "../model/CategoriaLivro";
 export class CategoriaLivroRepository {
     private static instance: CategoriaLivroRepository;
     private categoriaLivros: CategoriaLivro[] = [];
-    
+
 
     private constructor() { }
 
@@ -19,7 +19,7 @@ export class CategoriaLivroRepository {
         return this.categoriaLivros;
     }
     buscarPorId(id: number): CategoriaLivro | undefined {
-            return this.categoriaLivros.find(l => l.id === id);
-        }
+        return this.categoriaLivros.find(l => l.id === id);
+    }
 
 }

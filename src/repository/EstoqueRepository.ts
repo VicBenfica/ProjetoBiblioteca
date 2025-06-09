@@ -24,16 +24,11 @@ export class EstoqueRepository {
         return this.instance;
     }
 
-
+    insereExemplar(exemplar: Estoque): void {
+        this.estoques.push(exemplar);
+    }
     buscarPorId(id: number): Estoque | undefined {
         return this.estoques.find(e => e.id === id);
-    }
-
-    atualizarEstoque(exemplarAtualizado: Estoque): void {
-        const index = this.estoques.findIndex(e => e.id === exemplarAtualizado.id);
-        if (index !== -1) {
-            this.estoques[index] = exemplarAtualizado;
-        }
     }
     atualizarDisponibilidadePorId(id: number, disponivel: boolean): void {
         const index = this.buscarIndexPorId(id);
@@ -42,11 +37,18 @@ export class EstoqueRepository {
         }
     }
 
+    atualizarEstoque(exemplarAtualizado: Estoque): void {
+        const index = this.estoques.findIndex(e => e.id === exemplarAtualizado.id);
+        if (index !== -1) {
+            this.estoques[index] = exemplarAtualizado;
+        }
+    }
+    removerExemplarPorIndex(index: number): void {
+        this.estoques.splice(index, 1);
+    }
 
-
-
-    insereExemplar(exemplar: Estoque): void {
-        this.estoques.push(exemplar);
+    listarExemplaresDisponiveis(): Estoque[] {
+        return this.estoques.filter(estoque => estoque.disponivel);
     }
 
 
@@ -60,9 +62,7 @@ export class EstoqueRepository {
 
 
 
-    listarExemplaresDisponiveis(): Estoque[] {
-        return this.estoques.filter(estoque => estoque.disponivel);
-    }
+
 
 
 
@@ -72,9 +72,7 @@ export class EstoqueRepository {
 
 
 
-    removerExemplarPorIndex(index: number): void {
-        this.estoques.splice(index, 1);
-    }
+
 
 
 

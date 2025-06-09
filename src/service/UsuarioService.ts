@@ -13,25 +13,25 @@ type DadosAtualizacaoUsuario = {
     diaSuspensao?: number;
 };
 
-    export class UsuarioService {
-        private usuarioRepository = UsuarioRepository.getInstance();
-        private idCounter = 1; // contador local
+export class UsuarioService {
+    private usuarioRepository = UsuarioRepository.getInstance();
+    private idCounter = 1; // contador local
 
 
-        novoUsuario(data: any): Usuario {
+    novoUsuario(data: any): Usuario {
         // Validação de campos obrigatórios
         if (!data.nome || !data.cpf || !data.email || data.categoria_id === undefined || data.curso_id === undefined) {
-        throw new Error("Favor informar nome, cpf, email, categoria e curso.");
+            throw new Error("Favor informar nome, cpf, email, categoria e curso.");
         }
 
         // Criação do usuário
         const usuario = new Usuario(
-        this.idCounter++,
-        data.nome,
-        data.cpf,
-        data.email,
-        data.categoria_id,
-        data.curso_id     // status inicial
+            this.idCounter++,
+            data.nome,
+            data.cpf,
+            data.email,
+            data.categoria_id,
+            data.curso_id     // status inicial
         );                  // dia de suspensão
 
         // Inserção no repositório
@@ -63,7 +63,7 @@ type DadosAtualizacaoUsuario = {
         const index = this.usuarioRepository.buscarIndexPorCpf(cpf);
         if (index === -1) return undefined;
 
-        const usuarioAtual = this.usuarioRepository.listarUsuarios()[index];
+        const usuarioAtual = this.usuarioRepository.listarTodosUsuarios()[index];
 
         const usuarioAtualizado: Usuario = {
             id: novosDados.id ?? usuarioAtual.id,
@@ -81,5 +81,8 @@ type DadosAtualizacaoUsuario = {
 
     detalhesUsuario(cpf: string): Usuario | undefined {
         return this.usuarioRepository.detalhesUsuarioPorCpf(cpf);
+    }
+    listar(id: number) {
+        return this.usuarioRepository.listarUsuarioPorId(id);
     }
 }

@@ -119,7 +119,7 @@ export class EmprestimoService {
             throw new Error("Empréstimo não encontrado.");
         }
 
-        const usuario = this.usuarioRepo.buscarUsuarioPorId(emprestimo.usuario_id);
+        const usuario = this.usuarioRepo.listarUsuarioPorId(emprestimo.usuario_id);
         if (!usuario) {
             throw new Error("Usuário vinculado ao empréstimo não encontrado.");
         }
@@ -164,6 +164,14 @@ export class EmprestimoService {
         return emprestimo;
     }
 
+    listar() {
+        return this.emprestimoRepo.listarEmprestimos();
+    }
+    buscar(id: number) {
+        return this.emprestimoRepo.buscarPorId(id);
+    }
 
-    
+
+
+
 }

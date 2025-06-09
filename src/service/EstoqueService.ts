@@ -89,4 +89,10 @@ export class EstoqueService {
         console.log("Exemplar removido com sucesso.");
         return true;
     }
+    listarDisponiveis() {
+        return this.estoqueRepo.listarExemplaresDisponiveis();
+    }
+    listar() {
+        return this.estoqueRepo.listarEstoques();
+    }
 }
