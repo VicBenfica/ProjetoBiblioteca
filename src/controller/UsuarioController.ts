@@ -73,18 +73,13 @@ export class UsuarioController {
     }
     listar(req: Request, res: Response): void {
         try {
-            const usuario = this.usuarioService.listar(req.body.id)
-            res.status(201).json(usuario)
-        } catch (error: unknown) {
-            let message: string = "Não foi possível listar!!"
-            if (error instanceof Error) {
-                message = error.message
-            }
-            res.status(400).json({
-                message: message
-            });
+            const usuarios = this.usuarioService.listarTodos();
+            res.status(200).json(usuarios);
+        } catch (error: any) {
+            res.status(500).json({ message: error.message });
         }
     }
+
 
 
 

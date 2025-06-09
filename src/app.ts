@@ -19,6 +19,10 @@ const emprestimoController = new EmprestimoController();
 const app = express();
 
 const PORT = process.env.PORT ?? 3090;
+
+
+
+
 app.use(express.json());
 
 //Usuário
@@ -53,3 +57,7 @@ app.get("/library/cursos", cursoController.listar.bind(cursoController));
 app.get("/library/categorias-livro", categoriaLivroController.listar.bind(categoriaLivroController));
 
 app.listen(PORT, () => console.log("Servidor rodando em http://localhost:3090"));
+
+app.get("/", (req, res) => {
+  res.send("API está rodando ");
+});

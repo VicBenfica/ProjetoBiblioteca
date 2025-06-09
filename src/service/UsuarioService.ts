@@ -85,4 +85,8 @@ export class UsuarioService {
     listar(id: number) {
         return this.usuarioRepository.listarUsuarioPorId(id);
     }
+    listarTodos(): Usuario[] {
+        return this.usuarioRepository.listarTodosUsuarios();
+    }
+
 }
