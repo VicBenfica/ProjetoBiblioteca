@@ -19,4 +19,8 @@ export class CategoriaUsuarioRepository {
         return this.categoriaUsuarios;
     }
 
+    buscarPorId(id: number): CategoriaUsuario | undefined {
+    return this.categoriaUsuarios.find(c => c.id === id);
+  }
+
 }

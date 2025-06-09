@@ -1,13 +1,14 @@
 
 export class Usuario {
-    id?: number;
+    id: number;
     nome?: string;
     cpf?: string;
 
-    categoria_id?: number;
-    curso_id?: number;
-    ativo?: 'ativo' | 'inativo' | 'suspenso';
+    categoria_id: number;
+    curso_id: number;
+    ativo: 'ativo' | 'inativo' | 'suspenso';
     diaSuspensao?: number;
+    suspensao_ate?: Date | null; 
 
 
 
@@ -18,6 +19,7 @@ export class Usuario {
         this.ativo = 'ativo';
         this.curso_id = curso_id;
         this.categoria_id = categoria_id;
+        this.suspensao_ate = null;
 
     }
 }

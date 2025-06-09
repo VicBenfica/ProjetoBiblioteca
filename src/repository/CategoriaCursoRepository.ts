@@ -2,7 +2,7 @@ import { CategoriaCurso } from "../model/CategoriaCurso";
 
 export class CategoriaCursoRepository {
     private static instance: CategoriaCursoRepository;
-    private cursos: CategoriaCurso[] = [];
+    private categoriaCursos: CategoriaCurso[] = [];
 
     private constructor() { }
 
@@ -15,7 +15,11 @@ export class CategoriaCursoRepository {
 
 
     listarCursos(): CategoriaCurso[] {
-        return this.cursos;
+        return this.categoriaCursos;
     }
+    buscarPorId(id: number): CategoriaCurso | undefined {
+        return this.categoriaCursos.find(c => c.id === id);
+    }
+
 
 }

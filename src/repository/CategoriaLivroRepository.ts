@@ -18,5 +18,8 @@ export class CategoriaLivroRepository {
     listarLivros(): CategoriaLivro[] {
         return this.categoriaLivros;
     }
+    buscarPorId(id: number): CategoriaLivro | undefined {
+            return this.categoriaLivros.find(l => l.id === id);
+        }
 
 }

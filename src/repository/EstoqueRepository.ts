@@ -24,6 +24,27 @@ export class EstoqueRepository {
         return this.instance;
     }
 
+
+    buscarPorId(id: number): Estoque | undefined {
+        return this.estoques.find(e => e.id === id);
+    }
+
+    atualizarEstoque(exemplarAtualizado: Estoque): void {
+        const index = this.estoques.findIndex(e => e.id === exemplarAtualizado.id);
+        if (index !== -1) {
+            this.estoques[index] = exemplarAtualizado;
+        }
+    }
+    atualizarDisponibilidadePorId(id: number, disponivel: boolean): void {
+        const index = this.buscarIndexPorId(id);
+        if (index !== -1) {
+            this.estoques[index].disponivel = disponivel;
+        }
+    }
+
+
+
+
     insereExemplar(exemplar: Estoque): void {
         this.estoques.push(exemplar);
     }
@@ -49,17 +70,13 @@ export class EstoqueRepository {
         return this.estoques.findIndex(e => e.id === id);
     }
 
-    buscarExemplarPorId(id: number): Estoque | undefined {
-        return this.estoques.find(e => e.id === id);
-    }//Detalhes do exemplar
+
 
     removerExemplarPorIndex(index: number): void {
         this.estoques.splice(index, 1);
     }
 
-    atualizarDisponibilidade(index: number, disponivel: boolean): void {
-        this.estoques[index].disponivel = disponivel;
-    }
+
 
 
 

@@ -55,9 +55,9 @@ export class EstoqueService {
     }
 
     detalhesExemplar(id: number): Estoque | undefined {
-        return this.estoqueRepo.buscarExemplarPorId(id);
+        return this.estoqueRepo.buscarPorId(id);
     }
-    
+
     atualizarDisponibilidadeExemplar(id: number, disponivel: boolean): boolean {
         const index = this.estoqueRepo.buscarIndexPorId(id);
 
@@ -66,7 +66,7 @@ export class EstoqueService {
             return false;
         }
 
-        this.estoqueRepo.atualizarDisponibilidade(index, disponivel);
+        this.estoqueRepo.atualizarDisponibilidadePorId(id, disponivel);
         return true;
     }
 

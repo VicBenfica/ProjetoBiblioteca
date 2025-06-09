@@ -4,9 +4,10 @@ export class Emprestimo {
     estoque_id: number;
     data_emprestimo: Date;
     data_devolucao: Date;
-    data_entrega: Date;
+    data_entrega: Date | null;
+    suspensao_ate: Date | null;
     dias_atraso: number;
-    suspensao_ate: Date;
+
 
     constructor(
         id: number,
@@ -14,9 +15,9 @@ export class Emprestimo {
         estoque_id: number,
         data_emprestimo: Date,
         data_devolucao: Date,
-        data_entrega: Date,
+        data_entrega: Date | null,
         dias_atraso: number,
-        suspensao_ate: Date
+        suspensao_ate: Date | null,
     ) {
         this.id = id;
         this.usuario_id = usuario_id;
