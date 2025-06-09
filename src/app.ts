@@ -55,9 +55,11 @@ app.put("/library/emprestimos/:id/devolucao", emprestimoController.CriarDevoluca
 app.get("/library/categorias-usuario", catUsuController.listar.bind(catUsuController));
 app.get("/library/cursos", cursoController.listar.bind(cursoController));
 app.get("/library/categorias-livro", categoriaLivroController.listar.bind(categoriaLivroController));
+app.get("/", (req, res) => {
+  console.log(" Rota raiz chamada");
+  res.send("API está rodando ");
+});
 
 app.listen(PORT, () => console.log("Servidor rodando em http://localhost:3090"));
 
-app.get("/", (req, res) => {
-  res.send("API está rodando ");
-});
+

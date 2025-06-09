@@ -28,20 +28,18 @@ export class EmprestimoController {
 
     CriarDevolucao(req: Request, res: Response): void {
         try {
-
-            const id = Number(req.body.emprestimo_id);
+            const id = Number(req.params.id);  // <-- aqui
             const emprestimo = this.emprestimoService.registrarDevolucao(id);
-            res.status(201).json(emprestimo)
+            res.status(201).json(emprestimo);
         } catch (error: unknown) {
-            let message: string = "Não foi possível registrar Devolução!!"
+            let message: string = "Não foi possível registrar Devolução!!";
             if (error instanceof Error) {
-                message = error.message
+                message = error.message;
             }
-            res.status(400).json({
-                message: message
-            })
+            res.status(400).json({ message });
         }
     }
+
     listar(req: Request, res: Response): void {
         try {
             const emprestimo = this.emprestimoService.listar()
