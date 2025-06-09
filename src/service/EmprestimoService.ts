@@ -165,7 +165,5 @@ export class EmprestimoService {
     }
 
 
-    listarEmprestimos(): Emprestimo[] {
-        return this.emprestimoRepo.listarEmprestimos();
-    }
+    
 }
