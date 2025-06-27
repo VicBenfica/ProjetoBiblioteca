@@ -26,12 +26,13 @@ export class LivroController {
             if (!id) {
                 res.status(400).json({ message: "ID inválido!" });
                 return;
-            }
+            }//verifica se é um id valido
 
-            const estoques = EstoqueRepository.getInstance().listarEstoques(); // correto
-            const removido = this.livroService.removeLivro(id, estoques); // correto
+            const estoques = EstoqueRepository.getInstance().listarEstoques(); 
+            const removido = this.livroService.removeLivro(id, estoques); 
 
             if (!removido) {
+                //se o livro estiver emprestado
                 res.status(400).json({ message: "Não foi possível remover o livro, ele pode estar emprestado." });
             } else {
                 res.status(200).json({ message: "Livro removido com sucesso." });

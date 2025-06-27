@@ -7,6 +7,7 @@ export class Livro {
     edicao: string;
     isbn: string;
     categoria_id: number;
+    //liga com categoria Livro
 
 
 

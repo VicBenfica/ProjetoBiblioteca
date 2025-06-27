@@ -1,12 +1,13 @@
 export class Emprestimo {
+    //classe exportavel
     id: number;
     usuario_id: number;
-    estoque_id: number;
-    data_emprestimo: Date;
-    data_devolucao: Date;
-    data_entrega: Date | null;
-    suspensao_ate: Date | null;
-    dias_atraso: number;
+    estoque_id: number; //exemplar emprestado
+    data_emprestimo: Date; //quando foi pego
+    data_devolucao: Date; //prazo para ser devolvido
+    data_entrega: Date | null; //quando realmente foi devolvido
+    suspensao_ate: Date | null;//caso teve aatraso, mostra a data que ira permanecer suspenso
+    dias_atraso: number; //qtd de dias que a devolução atrasou
 
 
     constructor(

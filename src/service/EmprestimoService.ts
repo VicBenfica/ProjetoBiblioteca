@@ -26,7 +26,7 @@ export class EmprestimoService {
 
     registrarEmprestimoPorCpf(cpf: string, estoque_id: number): Emprestimo {
         const usuario = this.usuarioRepo.filtraUsuarioPorCpf(cpf);
-
+        //buscar por cpf
         if (!usuario) throw new Error("Usuário não encontrado.");
 
         if (usuario.ativo !== "ativo") {
@@ -34,16 +34,17 @@ export class EmprestimoService {
         }
 
         const hoje = new Date();
-
+        //Impede empréstimo se o usuário estiver suspenso.
         if (usuario.suspensao_ate && usuario.suspensao_ate > hoje) {
             throw new Error(`Usuário suspenso até ${usuario.suspensao_ate.toLocaleDateString()}.`);
+            //para a data local
         }
-
+        //Erro se o exemplar estiver insdiponivel ou nao for encontrado
         const estoque = this.estoqueRepo.buscarPorId(estoque_id);
         if (!estoque || !estoque.disponivel) {
             throw new Error("Exemplar não encontrado ou indisponível.");
         }
-
+        //Erro aao encontoru o livro
         const livro = this.livroRepo.buscarLivroPorId(estoque.livro_id);
         if (!livro) {
             throw new Error("Livro vinculado não encontrado.");
@@ -53,7 +54,7 @@ export class EmprestimoService {
         const emprestimosAtivos = this.emprestimoRepo
             .listarEmprestimos()
             .filter(e => e.usuario_id === usuario.id && !e.data_entrega);
-
+            //busca emprestimos do usuario que nao tem data de entrega 
         // Buscar categoria
         const categoriaUsuario = this.categoriaUsuarioRepo.buscarPorId(usuario.categoria_id);
         const curso = this.categoriaCursooRepo.buscarPorId(usuario.curso_id);
@@ -66,6 +67,8 @@ export class EmprestimoService {
         }
 
         const limiteEmprestimos = categoriaUsuario.nome.toLowerCase() === "professor" ? 5 : 3;
+        //minusculo
+        // se for professor tem o limite de 5, se nao tem 3
         if (emprestimosAtivos.length >= limiteEmprestimos) {
             throw new Error(`Limite de ${limiteEmprestimos} empréstimos atingido.`);
         }
@@ -86,35 +89,46 @@ export class EmprestimoService {
         ) {
             diasDevolucao = 30;
         }
+        //verifica se o usuario é um aluno, se existe uma categoria de livro valida, se tem o curso valido, se o aluno é da msm area q o livro
+
 
 
 
 
         const dataDevolucao = new Date();
         dataDevolucao.setDate(hoje.getDate() + diasDevolucao);
-
+        //a data de devolução vai ser o dia atual + os dias de emprestimo
+        //get pega  e set altera
         const novoEmprestimo = new Emprestimo(
             this.emprestimoRepo.gerarNovoId(),
             usuario.id,
             estoque_id,
             hoje,
             dataDevolucao,
-            null,
-            0,
-            null
+            null, //data_entrega: ainda não devolveu
+            0, // dias de atraso: 0
+            null  // suspensao_ate: só se atrasar
+            // é null p qianda n foi devolvido
         );
-
+        //atualiza o o status do estoque
         estoque.disponivel = false;
         this.estoqueRepo.atualizarEstoque(estoque);
         this.emprestimoRepo.salvarEmprestimo(novoEmprestimo);
-
+        //salva o novo emprestimo
         return novoEmprestimo;
     }
 
+    //Registra entrega.
 
+    //Calcula atraso e suspensão.
+
+    //Libera exemplar no estoque.
+
+    //Atualiza usuário se houver atraso.
 
     registrarDevolucao(emprestimo_id: number): Emprestimo {
         const emprestimo = this.emprestimoRepo.buscarPorId(emprestimo_id);
+
         if (!emprestimo) {
             throw new Error("Empréstimo não encontrado.");
         }
@@ -122,7 +136,7 @@ export class EmprestimoService {
         const usuario = this.usuarioRepo.listarUsuarioPorId(emprestimo.usuario_id);
         if (!usuario) {
             throw new Error("Usuário vinculado ao empréstimo não encontrado.");
-        }
+        }//Busca o usuario e o exemplar 
 
         const estoque = this.estoqueRepo.buscarPorId(emprestimo.estoque_id);
         if (!estoque) {
@@ -136,13 +150,17 @@ export class EmprestimoService {
         // Cálculo de atraso
         const atrasoMs = hoje.getTime() - emprestimo.data_devolucao.getTime();
         const diasAtraso = atrasoMs > 0 ? Math.ceil(atrasoMs / (1000 * 60 * 60 * 24)) : 0;
+        //mathceil arredonda p cima
         emprestimo.dias_atraso = diasAtraso;
+        //Calcula a diferença entre a data de entrega real e a data esperada (data_devolucao).
+
+        //Se houve atraso, converte o atraso de milissegundos para dias inteiros.
 
         if (diasAtraso > 0) {
             // Suspensão: 3 dias para cada dia de atraso
             const suspensao = new Date();
             suspensao.setDate(hoje.getDate() + diasAtraso * 3);
-
+            //Atualiza a data de suspensao do emprestimo
             emprestimo.suspensao_ate = suspensao;
 
             // Atualiza usuário
@@ -151,6 +169,7 @@ export class EmprestimoService {
             emprestimo.suspensao_ate = suspensao;
             this.usuarioRepo.atualizarUsuarioPorId(usuario.id, usuario);
         } else {
+            //se n tiver atraso limpa a suspensao
             emprestimo.suspensao_ate = null;
         }
 
@@ -158,7 +177,7 @@ export class EmprestimoService {
         estoque.disponivel = true;
         this.estoqueRepo.atualizarEstoque(estoque);
 
-        // Atualiza o empréstimo
+        // Atualiza o empréstimo no repositorio
         this.emprestimoRepo.atualizarEmprestimo(emprestimo);
 
         return emprestimo;

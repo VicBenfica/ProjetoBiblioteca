@@ -35,6 +35,8 @@ export class EstoqueRepository {
         if (index !== -1) {
             this.estoques[index].disponivel = disponivel;
         }
+        // usado quando o emprestimo é registrado
+        // e quando é feita a devolução
     }
 
     atualizarEstoque(exemplarAtualizado: Estoque): void {
@@ -45,10 +47,13 @@ export class EstoqueRepository {
     }
     removerExemplarPorIndex(index: number): void {
         this.estoques.splice(index, 1);
+        //remove o elemento na posicao indesx, 1- n de elementos para remover
+
     }
 
     listarExemplaresDisponiveis(): Estoque[] {
         return this.estoques.filter(estoque => estoque.disponivel);
+        // filter: filtra apenas os exemplares disponiveis
     }
 
 

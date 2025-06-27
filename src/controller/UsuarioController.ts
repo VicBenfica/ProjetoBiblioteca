@@ -24,7 +24,7 @@ export class UsuarioController {
     removerUsuario(req: Request, res: Response): void {
         try {
             const emprestimos = EmprestimoRepository.getInstance().listarEmprestimos();
-
+            //verifica se o usuario possui emprestimos ativos, se não tiver, pode ser removido
             const usuario = this.usuarioService.removeUsuarioPorCpf(req.body.cpf, emprestimos)
             res.status(201).json(usuario)
         } catch (error: unknown) {

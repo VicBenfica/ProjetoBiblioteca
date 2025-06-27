@@ -39,19 +39,21 @@ export class UsuarioService {
 
         return usuario;
     }
-
+    //remove apenas os usuarios que não tem emprestimos ativos
     removeUsuarioPorCpf(cpf: string, emprestimos: Emprestimo[]): boolean {
         const usuario = this.usuarioRepository.filtraUsuarioPorCpf(cpf);
         if (!usuario) return false;
-
+        // se n tiver retorna false
         const possuiEmprestimosAtivos = emprestimos.some(
             e => e.usuario_id === usuario.id && !e.data_entrega
-        );
+        );// se possuir emprestimo sem a data de entrega
+         //o item ainda não foi devolvido.
 
         if (possuiEmprestimosAtivos) return false;
-
+        // se tiver emprestimos ativos retona rfalse
         const index = this.usuarioRepository.buscarIndexPorCpf(cpf);
         if (index !== -1) {
+            //se encontrar a posiçao chamar a funçao p remover
             this.usuarioRepository.removerPorIndex(index);
             return true;
         }
@@ -62,8 +64,9 @@ export class UsuarioService {
     atualizarUsuario(cpf: string, novosDados: DadosAtualizacaoUsuario): Usuario | undefined {
         const index = this.usuarioRepository.buscarIndexPorCpf(cpf);
         if (index === -1) return undefined;
-
+        // se n acha r a posição retoena indefined
         const usuarioAtual = this.usuarioRepository.listarTodosUsuarios()[index];
+        //Pega o usuário original do array, com base no índice encontrado.
 
         const usuarioAtualizado: Usuario = {
             id: novosDados.id ?? usuarioAtual.id,
@@ -74,7 +77,7 @@ export class UsuarioService {
             ativo: novosDados.ativo ?? usuarioAtual.ativo,
             diaSuspensao: novosDados.diaSuspensao ?? usuarioAtual.diaSuspensao,
         };
-
+        // substirui o atigo pelo novo na msm posicao
         this.usuarioRepository.atualizarUsuarioDiretamente(index, usuarioAtualizado);
         return usuarioAtualizado;
     }

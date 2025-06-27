@@ -16,7 +16,7 @@ export class LivroService {
     private livroRepo = LivroRepository.getInstance();
 
     private idCounter = 1; // contador local
-
+    //cria exemplar novo de um livro
     novoLivro(data: any): Livro {
         // Validação de campos obrigatórios
         if (!data.titulo || !data.isbn || !data.autor || !data.editora || !data.edicao || !data.categoria_id) {
@@ -41,7 +41,7 @@ export class LivroService {
         return livro;
     }
 
-
+    //remove exemplar, verifica se esta emprestado antes de excluir
     removeLivro(id: number, estoque: Estoque[]): boolean {
         // Verifica se existe algum exemplar emprestado
         const emprestado = estoque.some(e => e.livro_id === id && e.quantidade_emprestada > 0);
@@ -65,8 +65,9 @@ export class LivroService {
     atualizarLivro(id: number, novosDados: DadosAtualizacaoLivro): Livro | undefined {
         const index = this.livroRepo.buscarIndexPorId(id);
         if (index === -1) return undefined;
-
+        //se n encontou o livro retorna undefined
         const livroAtual = this.livroRepo.buscarLivroPorId(id)!;
+        //para ter ctz que não é underfined, quando o usuario for buscar tem que colocar o id
 
         const livroAtualizado: Livro = {
             id: novosDados.id ?? livroAtual.id,
@@ -76,8 +77,8 @@ export class LivroService {
             edicao: novosDados.edicao ?? livroAtual.edicao,
             isbn: novosDados.isbn ?? livroAtual.isbn,
             categoria_id: novosDados.categoria_id ?? livroAtual.categoria_id
-        };
-
+        };// se nao forem enviados usa o do livro atual
+        //Atualiza pelo livro atualizado
         this.livroRepo.atualizarLivroPorIndex(index, livroAtualizado);
         return livroAtualizado;
     }
@@ -86,6 +87,6 @@ export class LivroService {
         return this.livroRepo.buscarLivroPorId(id);
     }
     listar(id: number) {
-        return this.livroRepo.listarLivros(id);
+        return this.livroRepo.listarLivros();
     }
 }

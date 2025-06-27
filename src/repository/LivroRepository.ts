@@ -3,7 +3,9 @@ import { Estoque } from "../model/Estoque";
 
 export class LivroRepository {
     private static instance: LivroRepository;
+    //instancia
     private livros: Livro[] = [];
+    //array
 
 
     public static getInstance(): LivroRepository {
@@ -18,23 +20,26 @@ export class LivroRepository {
     }
     atualizarLivroPorIndex(index: number, livroAtualizado: Livro): void {
         this.livros[index] = livroAtualizado;
+        //atualizar por indice
     }
 
 
     removerLivroPorIndex(index: number): void {
         this.livros.splice(index, 1);
+        //remove com base no indice
     }
 
-    listarLivros(id: number): Livro | undefined {
-        return this.livros.find(livro => livro.id === id);
+    
+     listarLivros(): Livro[] {
+        return this.livros;
     }
     buscarIndexPorId(id: number): number {
         return this.livros.findIndex(l => l.id === id);
     }
-    //detalhes
+    //, busca o INDICE com base no id
     buscarLivroPorId(id: number): Livro | undefined {
         return this.livros.find(l => l.id === id);
-    }
+    }//Busca os detalhes
 
 
 
