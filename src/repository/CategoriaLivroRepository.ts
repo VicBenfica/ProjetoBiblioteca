@@ -9,6 +9,15 @@ export class CategoriaLivroRepository {
 
     private constructor() { }
 
+    popularMock(): void {
+        this.categoriaLivros = [
+            new CategoriaLivro(1, "Romance"),
+            new CategoriaLivro(2, "Computação"),
+            new CategoriaLivro(3, "Letras"),
+            new CategoriaLivro(4, "Gestão")
+        ];
+    }
+
     public static getInstance(): CategoriaLivroRepository {
         if (!this.instance) {
             this.instance = new CategoriaLivroRepository();

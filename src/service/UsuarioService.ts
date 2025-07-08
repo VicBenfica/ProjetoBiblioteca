@@ -2,6 +2,7 @@
 import { Usuario } from "../model/Usuario";
 import { UsuarioRepository } from "../repository/UsuarioRepository";
 import { Emprestimo } from "../model/Emprestimo";
+import { Validador } from "../utils/validador"; 
 
 type DadosAtualizacaoUsuario = {
     id?: number;
@@ -20,6 +21,9 @@ export class UsuarioService {
 
     novoUsuario(data: any): Usuario {
         // Validação de campos obrigatórios
+        if (!Validador.validarCPFCompleto(data.cpf)) {
+            throw new Error("CPF inválido.");
+        }
         if (!data.nome || !data.cpf || !data.email || data.categoria_id === undefined || data.curso_id === undefined) {
             throw new Error("Favor informar nome, cpf, email, categoria e curso.");
         }
@@ -47,7 +51,7 @@ export class UsuarioService {
         const possuiEmprestimosAtivos = emprestimos.some(
             e => e.usuario_id === usuario.id && !e.data_entrega
         );// se possuir emprestimo sem a data de entrega
-         //o item ainda não foi devolvido.
+        //o item ainda não foi devolvido.
 
         if (possuiEmprestimosAtivos) return false;
         // se tiver emprestimos ativos retona rfalse

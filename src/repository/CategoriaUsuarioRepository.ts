@@ -15,6 +15,13 @@ export class CategoriaUsuarioRepository {
         }//ve se exisite uma instanci, se não, ceia e retorna
         return this.instance;
     }
+    popularMock(): void {
+        this.categoriaUsuarios = [
+            new CategoriaUsuario(1, "aluno"),
+            new CategoriaUsuario(2, "professor"),
+            new CategoriaUsuario(3, "bibliotecario")
+        ];
+    }
 
 
     listarUsuarios(): CategoriaUsuario[] {

@@ -7,6 +7,13 @@ export class CategoriaCursoRepository {
     //armazena todos os cursos no categoriaCursos
 
     private constructor() { }
+    popularMock(): void {
+        this.categoriaCursos = [
+            new CategoriaCurso(1, "ADS"),
+            new CategoriaCurso(2, "Pedagogia"),
+            new CategoriaCurso(3, "Administração")
+        ];
+    }
 
     public static getInstance(): CategoriaCursoRepository {
         //método para acessar a unica instancia da classe

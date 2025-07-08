@@ -7,6 +7,12 @@ import { LivroController } from "./controller/LivroController";
 import { CategoriaLivroController } from "./controller/CategoriaLivroController";
 import { EstoqueController } from "./controller/EstoqueController";
 import { EmprestimoController } from "./controller/EmprestimoController";
+import { CategoriaCursoRepository } from "./repository/CategoriaCursoRepository";
+import { CategoriaCurso } from "./model/CategoriaCurso";
+import { CategoriaLivroRepository } from "./repository/CategoriaLivroRepository";
+import { CategoriaLivro } from "./model/CategoriaLivro";
+import { CategoriaUsuarioRepository } from "./repository/CategoriaUsuarioRepository";
+import { CategoriaUsuario } from "./model/CategoriaUsuario";
 
 const usuarioController = new UsuarioController();
 const catUsuController = new CategoriaUsuarioController();
@@ -59,6 +65,20 @@ app.get("/", (req, res) => {
   console.log(" Rota raiz chamada");
   res.send("API está rodando ");
 });
+
+
+// Populando categorias de curso
+const cursoRepo = CategoriaCursoRepository.getInstance();
+cursoRepo.popularMock();
+
+// Populando categorias de livro
+
+const livroCatRepo = CategoriaLivroRepository.getInstance();
+livroCatRepo.popularMock();
+
+// Populando categorias de usuário
+const usuarioCatRepo = CategoriaUsuarioRepository.getInstance();
+usuarioCatRepo.popularMock();
 
 app.listen(PORT, () => console.log("Servidor rodando em http://localhost:3090"));
 

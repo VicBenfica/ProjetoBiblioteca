@@ -20,26 +20,42 @@ export class LivroService {
     novoLivro(data: any): Livro {
         // Validação de campos obrigatórios
         if (!data.titulo || !data.isbn || !data.autor || !data.editora || !data.edicao || !data.categoria_id) {
-            throw new Error("Favor informar titulo, ISBN, autor, editora, edição e categoria.");
+            throw new Error("Favor informar título, ISBN, autor, editora, edição e categoria.");
         }
 
-        // Criação do usuário
-        const livro = new Livro(
-            this.idCounter++,
-            data.titulo,
-            data.isbn,
-            data.autor,
-            data.edicao,
-            data.editora,
-            data.categoria_id
-            // status inicial
-        );                  // dia de suspensão
+        // Verificação de ISBN duplicado
+        const isbnExistente = this.livroRepo.listarLivros().some(l => l.isbn === data.isbn);
+        if (isbnExistente) {
+            throw new Error("Já existe um livro com esse ISBN.");
+        }
 
-        // Inserção no repositório
-        this.livroRepo.insereLivro(livro);
+        // Verificação de combinação duplicada (autor + editora + edição)
+        const combinacaoDuplicada = this.livroRepo.listarLivros().some(l =>
+            l.autor === data.autor &&
+            l.editora === data.editora &&
+            l.edicao === data.edicao
+        );
+        if (combinacaoDuplicada) {
+            throw new Error("Já existe um livro com esse autor, editora e edição.");
+        }
+
+        // Criação do livro - CORREÇÃO DA ORDEM DOS PARÂMETROS
+        const livro = new Livro(
+            this.idCounter++,   // 1. id
+            data.titulo,       // 2. titulo
+            data.autor,        // 3. autor (correto)
+            data.editora,      // 4. editora (correto)
+            data.edicao,       // 5. edicao (correto)
+            data.isbn,         // 6. isbn (correto)
+            data.categoria_id  // 7. categoria_id (correto)
+        );
+
+            // Inserção no repositório
+            this.livroRepo.insereLivro(livro);
 
         return livro;
     }
+
 
     //remove exemplar, verifica se esta emprestado antes de excluir
     removeLivro(id: number, estoque: Estoque[]): boolean {
@@ -51,6 +67,7 @@ export class LivroService {
             return false;
         }
 
+        // Usar buscarIndexPorId, conforme definido no LivroRepository
         const index = this.livroRepo.buscarIndexPorId(id);
         if (index === -1) {
             console.log("Livro não encontrado.");
@@ -63,11 +80,12 @@ export class LivroService {
     }
 
     atualizarLivro(id: number, novosDados: DadosAtualizacaoLivro): Livro | undefined {
+        // Usar buscarIndexPorId
         const index = this.livroRepo.buscarIndexPorId(id);
         if (index === -1) return undefined;
-        //se n encontou o livro retorna undefined
+
+        // Usar buscarLivroPorId
         const livroAtual = this.livroRepo.buscarLivroPorId(id)!;
-        //para ter ctz que não é underfined, quando o usuario for buscar tem que colocar o id
 
         const livroAtualizado: Livro = {
             id: novosDados.id ?? livroAtual.id,
@@ -77,16 +95,19 @@ export class LivroService {
             edicao: novosDados.edicao ?? livroAtual.edicao,
             isbn: novosDados.isbn ?? livroAtual.isbn,
             categoria_id: novosDados.categoria_id ?? livroAtual.categoria_id
-        };// se nao forem enviados usa o do livro atual
-        //Atualiza pelo livro atualizado
+        };
         this.livroRepo.atualizarLivroPorIndex(index, livroAtualizado);
         return livroAtualizado;
     }
 
-    detalhesLivro(id: number): Livro | undefined {
-        return this.livroRepo.buscarLivroPorId(id);
+     detalhesLivro(isbn: string): Livro | undefined { // Agora espera um ISBN (string)
+        return this.livroRepo.buscarLivroPorIsbn(isbn); // Chama o novo método do repositório
     }
-    listar(id: number) {
+
+    // O método listar no LivroService está recebendo um 'id' mas não o utiliza.
+    // Se a intenção é listar todos os livros, o parâmetro 'id' é desnecessário.
+    // Se a intenção é listar um livro específico, o nome do método deveria ser 'buscarLivro' ou similar.
+    listar() { // Removido o parâmetro 'id' se a intenção é listar todos
         return this.livroRepo.listarLivros();
     }
 }
