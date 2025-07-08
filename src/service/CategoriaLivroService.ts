@@ -1,14 +1,14 @@
-
-import { CategoriaLivro } from "../model/CategoriaLivro";
 import { CategoriaLivroRepository } from "../repository/CategoriaLivroRepository";
 
-export class CategoriaLivroService {
+export class CategoriaLivroService{
     categoriaLivroRepository = CategoriaLivroRepository.getInstance();
 
-    listarLivros() {
-        return this.categoriaLivroRepository.listarLivros();
+    listarCategorias(){
+        return this.categoriaLivroRepository.listarCategorias();
     }
-    buscarCategorias(id: number) {
+
+    buscarPorId(id: number){
         return this.categoriaLivroRepository.buscarPorId(id);
     }
+    
 }

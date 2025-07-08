@@ -1,87 +1,46 @@
-import { Estoque } from "../model/Estoque";
-import { Livro } from "../model/Livro";
+import {Estoque} from '../model/Estoque';
 
-type DadosAtualizacaoEstoque = {
-    id?: number;
-    livro_id?: number;
-    quantidade?: number;
-    quantidade_emprestada?: number;
-    disponivel?: boolean;
-}
-
-export class EstoqueRepository {
+export class EstoqueRepository{
     private static instance: EstoqueRepository;
-    private estoques: Estoque[] = [];
-    private idCounter = 1;
+    private exemplares: Estoque[] = [];
 
+    private constructor(){}
 
-    private constructor() { }
-
-    public static getInstance(): EstoqueRepository {
-        if (!this.instance) {
+    public static getInstance(): EstoqueRepository{
+        if(!this.instance) {
             this.instance = new EstoqueRepository();
         }
         return this.instance;
     }
 
-    insereExemplar(exemplar: Estoque): void {
-        this.estoques.push(exemplar);
-    }
-    buscarPorId(id: number): Estoque | undefined {
-        return this.estoques.find(e => e.id === id);
-    }
-    atualizarDisponibilidadePorId(id: number, disponivel: boolean): void {
-        const index = this.buscarIndexPorId(id);
-        if (index !== -1) {
-            this.estoques[index].disponivel = disponivel;
-        }
-        // usado quando o emprestimo é registrado
-        // e quando é feita a devolução
+    inserirExemplar(exemplar: Estoque){
+        this.exemplares.push(exemplar);
     }
 
-    atualizarEstoque(exemplarAtualizado: Estoque): void {
-        const index = this.estoques.findIndex(e => e.id === exemplarAtualizado.id);
-        if (index !== -1) {
-            this.estoques[index] = exemplarAtualizado;
-        }
-    }
-    removerExemplarPorIndex(index: number): void {
-        this.estoques.splice(index, 1);
-        //remove o elemento na posicao indesx, 1- n de elementos para remover
-
+    buscarPorISBN(isbn:string): Estoque | undefined{
+        return this.exemplares.find(exemplar => exemplar.livro_isbn === isbn);
     }
 
-    listarExemplaresDisponiveis(): Estoque[] {
-        return this.estoques.filter(estoque => estoque.disponivel);
-        // filter: filtra apenas os exemplares disponiveis
+    buscarPorCodigo(codigo: number): Estoque | undefined{
+        return this.exemplares.find(exemplar => exemplar.codigo === codigo);
     }
 
-
-    listarEstoques(): Estoque[] {
-        return this.estoques;
+    listarEstoque(): Estoque[]{
+        return this.exemplares;
+    }
+    
+    atualizarStatus(codigo: number, status: "emprestado" | "disponivel"): boolean {
+        const exemplar = this.buscarPorCodigo(codigo);
+        if (!exemplar) return false;
+        exemplar.status = status;
+        return true;
     }
 
-    gerarNovoId(): number {
-        return this.idCounter++;
+    remover(codigo: number): boolean {
+        const index = this.exemplares.findIndex(e => e.codigo === codigo);
+        if (index === -1) return false;
+
+        this.exemplares.splice(index, 1);
+        return true;
     }
-
-
-
-
-
-
-
-    buscarIndexPorId(id: number): number {
-        return this.estoques.findIndex(e => e.id === id);
-    }
-
-
-
-
-
-
-
-
-
-
 }

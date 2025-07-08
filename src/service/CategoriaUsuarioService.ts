@@ -1,14 +1,13 @@
-
-import { CategoriaUsuario } from "../model/CategoriaUsuario";
 import { CategoriaUsuarioRepository } from "../repository/CategoriaUsuarioRepository";
 
-export class CategoriaUsuarioService {
-    categoriaUsuarioRepository = CategoriaUsuarioRepository.getInstance();
+export class CategoriaUsuarioService{
+    categoriaUsuRepository = CategoriaUsuarioRepository.getInstance();
 
-    listar() {
-        return this.categoriaUsuarioRepository.listarUsuarios();
+    listarCategorias(){
+        return this.categoriaUsuRepository.listarCategorias();
     }
-    buscarCategorias(id: number) {
-        return this.categoriaUsuarioRepository.buscarPorId(id);
+
+    buscarPorId(id: number){
+        return this.categoriaUsuRepository.buscarPorId(id);
     }
 }

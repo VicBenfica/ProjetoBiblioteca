@@ -1,9 +1,10 @@
-export class CategoriaUsuario {
-    id: number;
-    nome: 'aluno' | 'professor' | 'bibliotecario';
+export class CategoriaUsuario{
+  id: number;
+  nome: string;
 
-    constructor(id: number, nome: 'aluno' | 'professor' | 'bibliotecario') {
-        this.id = id;
-        this.nome = nome;
-    }
+  constructor(id:number, nome: string){
+    this.id = id;
+    this. nome = nome;
+  }
+
 }

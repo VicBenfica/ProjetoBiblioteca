@@ -1,113 +1,125 @@
 import { Livro } from "../model/Livro";
-import { Estoque } from "../model/Estoque";
 import { LivroRepository } from "../repository/LivroRepository";
+import { CategoriaLivroService } from "./CategoriaLivroService";
+import { EstoqueRepository } from "../repository/EstoqueRepository";
+import { EmprestimoRepository } from "../repository/EmprestimoRepository";
+import { EstoqueService } from "./EstoqueService";
 
 type DadosAtualizacaoLivro = {
-    id?: number;
+    isbn?: string;
     titulo?: string;
     autor?: string;
     editora?: string;
     edicao?: string;
-    isbn?: string;
-    categoria_id?: number;
-};
+    categoriaId?: number;
+}
 
-export class LivroService {
-    private livroRepo = LivroRepository.getInstance();
+export class LivroService{
+    livroRepository: LivroRepository = LivroRepository.getInstance();
+    categoriaService = new CategoriaLivroService();
+    estoqueService = new EstoqueService();
+    estoqueRepository: EstoqueRepository = EstoqueRepository.getInstance();
+    emprestimoRepository: EmprestimoRepository = EmprestimoRepository.getInstance();
 
-    private idCounter = 1; // contador local
-    //cria exemplar novo de um livro
-    novoLivro(data: any): Livro {
-        // Validação de campos obrigatórios
-        if (!data.titulo || !data.isbn || !data.autor || !data.editora || !data.edicao || !data.categoria_id) {
-            throw new Error("Favor informar título, ISBN, autor, editora, edição e categoria.");
+    AdicionarLivro(livroData: any): Livro {
+        const {isbn, titulo, autor, editora, edicao, categoriaId} = livroData;
+        if (!titulo || !autor || !editora || !edicao || !isbn || !categoriaId) {
+            throw new Error("Informações incompletas para cadastrar livro.");
+        }
+            
+        const categoria = this.categoriaService.buscarPorId(categoriaId);
+        if (!categoria) {
+            throw new Error("Categoria inválida!");
         }
 
-        // Verificação de ISBN duplicado
-        const isbnExistente = this.livroRepo.listarLivros().some(l => l.isbn === data.isbn);
-        if (isbnExistente) {
-            throw new Error("Já existe um livro com esse ISBN.");
+        if (this.livroRepository.buscarLivroPorISBN(isbn)) {
+            throw new Error("Livro com esse ISBN já existe!");
         }
+    
+        const livroExistente = this.livroRepository.buscarLivroPorAutorEditoraEdicao(autor, editora, edicao);
+        if(livroExistente){
+            throw new Error("Já existe um livro com este autor, editora e edição!");
+        }
+    
+        const novoLivro = new Livro(isbn, titulo, autor, editora, edicao, categoriaId);
+        this.livroRepository.inserirLivro(novoLivro);
+        return novoLivro;
+    }
 
-        // Verificação de combinação duplicada (autor + editora + edição)
-        const combinacaoDuplicada = this.livroRepo.listarLivros().some(l =>
-            l.autor === data.autor &&
-            l.editora === data.editora &&
-            l.edicao === data.edicao
+    listarLivroComFiltro(filtros: any): Livro[]{
+        const {isbn, titulo, autor, categoriaId} = filtros;
+        const livros = this.livroRepository.listarLivros();
+
+        return livros.filter(livro => {
+            const combinaISBN = isbn ? livro.isbn.toLowerCase().includes(isbn.toLowerCase()): true;
+            const combinaTitulo = titulo ? livro.titulo.toLowerCase().includes(titulo.toLowerCase()): true;
+            const combinaAutor = autor ? livro.autor.toLowerCase().includes(autor.toLowerCase()): true;
+            const combinaCatId = categoriaId? livro.categoriaId === categoriaId: true;
+            return combinaISBN && combinaTitulo && combinaAutor && combinaCatId;
+            }
         );
-        if (combinacaoDuplicada) {
-            throw new Error("Já existe um livro com esse autor, editora e edição.");
+    }
+
+    buscarLivroPorISBN(isbn: string): Livro {
+        const livro = this.livroRepository.buscarLivroPorISBN(isbn);
+        if (!livro) {
+            throw new Error("Livro não encontrado.");
         }
-
-        // Criação do livro - CORREÇÃO DA ORDEM DOS PARÂMETROS
-        const livro = new Livro(
-            this.idCounter++,   // 1. id
-            data.titulo,       // 2. titulo
-            data.autor,        // 3. autor (correto)
-            data.editora,      // 4. editora (correto)
-            data.edicao,       // 5. edicao (correto)
-            data.isbn,         // 6. isbn (correto)
-            data.categoria_id  // 7. categoria_id (correto)
-        );
-
-            // Inserção no repositório
-            this.livroRepo.insereLivro(livro);
-
         return livro;
     }
 
-
-    //remove exemplar, verifica se esta emprestado antes de excluir
-    removeLivro(id: number, estoque: Estoque[]): boolean {
-        // Verifica se existe algum exemplar emprestado
-        const emprestado = estoque.some(e => e.livro_id === id && e.quantidade_emprestada > 0);
-
-        if (emprestado) {
-            console.log("Não é possível remover: o livro possui exemplares emprestados.");
-            return false;
+    atualizarLivro(isbn: string, novosDados: DadosAtualizacaoLivro): Livro{
+        const livro = this.livroRepository.buscarLivroPorISBN(isbn);
+        if(!livro){
+            throw new Error("Livro não encontrado!");
+        }
+    
+        if(!novosDados.titulo && !novosDados.autor && !novosDados.editora && !novosDados.edicao && !novosDados.categoriaId){
+            throw new Error("Nenhum dado informado para atualização.");
         }
 
-        // Usar buscarIndexPorId, conforme definido no LivroRepository
-        const index = this.livroRepo.buscarIndexPorId(id);
-        if (index === -1) {
-            console.log("Livro não encontrado.");
-            return false;
+        if(novosDados.isbn && novosDados.isbn !== isbn){
+            throw new Error("Não é permitido alterar o ISBN do livro.");
         }
-
-        this.livroRepo.removerLivroPorIndex(index);
-        console.log("Livro removido com sucesso.");
-        return true;
-    }
-
-    atualizarLivro(id: number, novosDados: DadosAtualizacaoLivro): Livro | undefined {
-        // Usar buscarIndexPorId
-        const index = this.livroRepo.buscarIndexPorId(id);
-        if (index === -1) return undefined;
-
-        // Usar buscarLivroPorId
-        const livroAtual = this.livroRepo.buscarLivroPorId(id)!;
-
-        const livroAtualizado: Livro = {
-            id: novosDados.id ?? livroAtual.id,
-            titulo: novosDados.titulo ?? livroAtual.titulo,
-            autor: novosDados.autor ?? livroAtual.autor,
-            editora: novosDados.editora ?? livroAtual.editora,
-            edicao: novosDados.edicao ?? livroAtual.edicao,
-            isbn: novosDados.isbn ?? livroAtual.isbn,
-            categoria_id: novosDados.categoria_id ?? livroAtual.categoria_id
-        };
-        this.livroRepo.atualizarLivroPorIndex(index, livroAtualizado);
+    
+        if(novosDados.categoriaId){
+            const categoria = this.categoriaService.buscarPorId(novosDados.categoriaId);
+            if(!categoria){
+                throw new Error("Categoria Inválida!");
+            }
+        }
+            
+        const livroAtualizado = this.livroRepository.atualizarDadosLivro(isbn, novosDados);
+        if(!livroAtualizado){
+            throw new Error("Erro inesperado ao atualizar livro!");
+        }
         return livroAtualizado;
     }
 
-     detalhesLivro(isbn: string): Livro | undefined { // Agora espera um ISBN (string)
-        return this.livroRepo.buscarLivroPorIsbn(isbn); // Chama o novo método do repositório
+    removerLivro(isbn: string): void{
+        const livro = this.livroRepository.buscarLivroPorISBN(isbn);
+        if (!livro) {
+            throw new Error("Livro não encontrado.");
+        }
+
+        const exemplares = this.estoqueRepository.listarEstoque().filter(e => e.livro_isbn === isbn);
+        if (exemplares.length > 0) {
+            throw new Error("Não é possível remover o livro: existem exemplares vinculados no estoque.");
+        }
+
+        const emprestimos = this.emprestimoRepository.listarEmprestimos();
+        const emprestimosAtivos = emprestimos.filter(e => {
+            const exemplar = this.estoqueRepository.buscarPorCodigo(e.codigoExemplar);
+            return exemplar && exemplar.livro_isbn === isbn && !e.dataEntrega;
+        });
+
+        if (emprestimosAtivos.length > 0) {
+            throw new Error("Não é possível remover o livro: existem empréstimos ativos.");
+        }
+        if (this.estoqueService.existeExemplarDoLivro(isbn)) {
+            throw new Error("Não é possível remover o livro: existem exemplares vinculados.");
+        }
+        this.livroRepository.removerLivro(isbn);
     }
 
-    // O método listar no LivroService está recebendo um 'id' mas não o utiliza.
-    // Se a intenção é listar todos os livros, o parâmetro 'id' é desnecessário.
-    // Se a intenção é listar um livro específico, o nome do método deveria ser 'buscarLivro' ou similar.
-    listar() { // Removido o parâmetro 'id' se a intenção é listar todos
-        return this.livroRepo.listarLivros();
-    }
 }

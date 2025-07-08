@@ -1,27 +1,22 @@
-import { Request, Response } from "express";
-//Request e Response: são objetos do Express usados para capturar e responder requisições HTTP.
 import { CategoriaUsuarioService } from "../service/CategoriaUsuarioService";
+import { Request, Response } from "express";
 
+export class CategoriaUsuarioController{
+    private catUsuService = new CategoriaUsuarioService();
 
-export class CategoriaUsuarioController {
-    private categoriaUsuarioService = new CategoriaUsuarioService()
-
-    listar(req: Request, res: Response): void {
-        try {
-            const categoria = this.categoriaUsuarioService.listar()
-            res.status(201).json(categoria)
-            //retorna os usuario em fotmato JSON 
-        } catch (error: unknown) {
-            let message: string = "Não foi possível listar!!"
-            if (error instanceof Error) {
-                message = error.message
-                //se o erro tiver uma instancia, mostra
+    listarCategorias(req: Request, res: Response){
+        try{
+            const categoria = this.catUsuService.listarCategorias();
+            res.status(201).json(categoria);
+        }
+        catch(error: unknown){
+            let message: string = "Não foi possível listar as categorias";
+            if(error instanceof Error){
+                message = error.message;
             }
             res.status(400).json({
                 message: message
-                // se não, mostra o erro combiando;
             });
         }
     }
-
 }

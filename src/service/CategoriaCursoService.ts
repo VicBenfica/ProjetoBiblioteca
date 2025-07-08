@@ -1,17 +1,13 @@
+import { CursoRepository } from "../repository/CategoriaCursoRepository";
 
-import { CategoriaCurso } from "../model/CategoriaCurso";
-import { CategoriaCursoRepository } from "../repository/CategoriaCursoRepository";
+export class CursoService{
+    cursoRepository = CursoRepository.getInstance();
 
-export class CategoriaCursoService {
-    categoriaCursoRepository = CategoriaCursoRepository.getInstance();
-
-    listarCategorias() {
-        return this.categoriaCursoRepository.listarCursos();
-    }
-    //retorna todos os cursos cadastrados
-    buscarCategorias(id: number) {
-        return this.categoriaCursoRepository.buscarPorId(id);
-    //busca o curso por id
+    listarCursos(){
+        return this.cursoRepository.listarCursos();
     }
 
+    buscarPorId(id: number){
+        return this.cursoRepository.buscarPorId(id);
+    }
 }

@@ -1,9 +1,8 @@
-export class CategoriaLivro {
+export class CategoriaLivro{
     id: number;
-    nome: 'Romance' | 'Computação' | 'Letras' | 'Gestão';
+    nome: string;
 
-
-    constructor(id: number, nome: 'Romance' | 'Computação' | 'Letras' | 'Gestão') {
+    constructor(id: number, nome: string){
         this.id = id;
         this.nome = nome;
     }

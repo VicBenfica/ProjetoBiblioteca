@@ -1,9 +1,18 @@
 import { Livro } from "../model/Livro";
-import { Estoque } from "../model/Estoque"; // Estoque é importado mas não usado diretamente aqui.
+
+type DadosAtualizacaoLivro = {
+    titulo?: string;
+    autor?: string;
+    editora?: string;
+    edicao?: string;
+    categoriaId?: number;
+}
 
 export class LivroRepository {
     private static instance: LivroRepository;
     private livros: Livro[] = [];
+
+    private constructor() {}
 
     public static getInstance(): LivroRepository {
         if (!this.instance) {
@@ -12,35 +21,56 @@ export class LivroRepository {
         return this.instance;
     }
 
-    insereLivro(livro: Livro) {
+    inserirLivro(livro: Livro) {
         this.livros.push(livro);
     }
-    atualizarLivroPorIndex(index: number, livroAtualizado: Livro): void {
-        this.livros[index] = livroAtualizado;
+
+    buscarLivroPorISBN(isbn: string): Livro | undefined {
+        return this.livros.find((livro) => livro.isbn === isbn);
     }
 
-    removerLivroPorIndex(index: number): void {
-        this.livros.splice(index, 1);
+    buscarLivroPorAutorEditoraEdicao(autor: string, editora: string, edicao: string): Livro | undefined{
+        return this.livros.find(livro => livro.autor.toLowerCase() === autor.toLowerCase()
+        && livro.editora.toLowerCase() === editora.toLowerCase() && livro.edicao === edicao);
     }
 
     listarLivros(): Livro[] {
         return this.livros;
     }
-    buscarIndexPorId(id: number): number {
-        return this.livros.findIndex(l => l.id === id);
+
+    atualizarDadosLivro(isbn: string, novosDados: DadosAtualizacaoLivro){
+        const livro = this.buscarLivroPorISBN(isbn);
+        if(!livro) return undefined;
+
+        if(novosDados.titulo){
+            livro.titulo = novosDados.titulo;
+        }
+
+        if(novosDados.autor){
+            livro.autor = novosDados.autor;
+        }
+
+        if(novosDados.editora){
+            livro.editora = novosDados.editora;
+        }
+
+        if(novosDados.edicao){
+            livro.edicao = novosDados.edicao;
+        }
+
+        if(novosDados.categoriaId){
+            livro.categoriaId = novosDados.categoriaId;
+        }
+
+        return livro;
     }
-    buscarLivroPorId(id: number): Livro | undefined {
-        return this.livros.find(l => l.id === id);
+
+    removerLivro(isbn: string): boolean{
+        const index = this.livros.findIndex(l => l.isbn == isbn);
+        if(index == -1){
+            return false;
+        }
+        this.livros.splice(index, 1);
+        return true;
     }
-    // NOVO MÉTODO: Buscar livro por ISBN
-    buscarLivroPorIsbn(isbn: string): Livro | undefined {
-        console.log("Buscando ISBN:", isbn); // Adicione esta linha
-        const found = this.livros.find(l => {
-            console.log("Comparando:", l.isbn, "com", isbn, "Resultado:", l.isbn === isbn); // Adicione esta linha
-            return l.isbn === isbn;
-        });
-        console.log("Livro encontrado:", found); // Adicione esta linha
-        return found;
-    }
-    
 }

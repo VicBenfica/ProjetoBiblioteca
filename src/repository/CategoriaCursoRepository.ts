@@ -1,37 +1,29 @@
 import { CategoriaCurso } from "../model/CategoriaCurso";
 //importa o model
 
-export class CategoriaCursoRepository {
-    private static instance: CategoriaCursoRepository;
-    private categoriaCursos: CategoriaCurso[] = [];
-    //armazena todos os cursos no categoriaCursos
+export class CursoRepository{
+    private static instance: CursoRepository;
+    private cursos: CategoriaCurso[] = [
+        new CategoriaCurso(0, "Não se Aplica"),
+        new CategoriaCurso(1, "ADS"),
+        new CategoriaCurso(2, "Pedagogia"),
+        new CategoriaCurso(3, "Administração")
+    ];
 
-    private constructor() { }
-    popularMock(): void {
-        this.categoriaCursos = [
-            new CategoriaCurso(1, "ADS"),
-            new CategoriaCurso(2, "Pedagogia"),
-            new CategoriaCurso(3, "Administração")
-        ];
-    }
+    private constructor(){}
 
-    public static getInstance(): CategoriaCursoRepository {
-        //método para acessar a unica instancia da classe
-        if (!this.instance) {
-
-            this.instance = new CategoriaCursoRepository();
+    public static getInstance(): CursoRepository {
+        if(!this.instance){
+            this.instance = new CursoRepository;
         }
         return this.instance;
     }
 
-
-    listarCursos(): CategoriaCurso[] {
-        return this.categoriaCursos;
+    listarCursos(): CategoriaCurso[]{
+            return this.cursos;
+        }
+    
+        buscarPorId(id: number): CategoriaCurso | undefined{
+            return this.cursos.find(curso => curso.id === id);
+        }
     }
-    buscarPorId(id: number): CategoriaCurso | undefined {
-        return this.categoriaCursos.find(c => c.id === id);
-        //se encontrar retorna a categoria se não retorna undefined
-    }
-
-
-}

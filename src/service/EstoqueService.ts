@@ -1,100 +1,89 @@
 import { Estoque } from "../model/Estoque";
 import { EstoqueRepository } from "../repository/EstoqueRepository";
+import { LivroRepository } from "../repository/LivroRepository";
 
-type DadosManualEstoque = {
-    id: number;
-    livro_id: number;
-    quantidade: number;
-    quantidade_emprestada: number;
-    disponivel: boolean;
-};
+export class EstoqueService{
+    estoqueRepository: EstoqueRepository = EstoqueRepository.getInstance();
+    livroRepository: LivroRepository = LivroRepository.getInstance();
 
-
-export class EstoqueService {
-    private estoqueRepo = EstoqueRepository.getInstance();
-
-
-    NovoExemplar(dados: DadosManualEstoque): Estoque {
-        // Validação
-        if (
-            dados.livro_id === undefined ||
-            dados.quantidade === undefined ||
-            dados.quantidade_emprestada === undefined ||
-            dados.disponivel === undefined
-        ) {
-            throw new Error("Todos os campos são obrigatórios.");
+    cadastrarExemplar(codigo: number, livro_isbn: string){
+        if(!codigo || !livro_isbn){
+            throw new Error("ISBN e código do livro é obrigatório!");
         }
 
-        if (dados.quantidade < 1) {
-            throw new Error("A quantidade deve ser pelo menos 1.");
+        const livro = this.livroRepository.buscarLivroPorISBN(livro_isbn);
+        if(!livro){
+            throw new Error("Livro não encontrado.");
         }
 
-        if (dados.quantidade_emprestada < 0) {
-            throw new Error("A quantidade emprestada não pode ser negativa.");
+        const novoExemplar = new Estoque(codigo, livro_isbn, 1, 0);
+        const existente = this.estoqueRepository.buscarPorCodigo(novoExemplar.codigo);
+        if(existente){
+            throw new Error("Código já utilizado. Tente novamente.");
         }
+        this.estoqueRepository.inserirExemplar(novoExemplar);
+        return novoExemplar;
+    }
 
-        if (dados.quantidade_emprestada > dados.quantidade) {
-            throw new Error("A quantidade emprestada não pode exceder a quantidade total.");
+    listarDisponiveis(): Estoque[] {
+        return this.estoqueRepository.listarEstoque().filter(e => e.status === "disponivel");
+    }
+
+    buscarExemplar(codigo: number): Estoque {
+        const exemplar = this.estoqueRepository.buscarPorCodigo(codigo);
+        if(!exemplar){
+            throw new Error("Exemplar não encontrado.");
         }
-
-        
-        const idGerado = this.estoqueRepo.gerarNovoId();
-
-        const exemplar = new Estoque(
-            idGerado,
-            dados.livro_id,
-            dados.quantidade,
-            dados.quantidade_emprestada,
-            dados.disponivel
-        );
-
-        this.estoqueRepo.insereExemplar(exemplar);
         return exemplar;
     }
 
-
-    detalhesExemplar(id: number): Estoque | undefined {
-        return this.estoqueRepo.buscarPorId(id);
-    }
-
-    atualizarDisponibilidadeExemplar(id: number, disponivel: boolean): boolean {
-        const index = this.estoqueRepo.buscarIndexPorId(id);
-
-        if (index === -1) {
-            console.log("Exemplar não encontrado.");
-            return false;
-        }
-        //Erro se n tiver exemplar
-        this.estoqueRepo.atualizarDisponibilidadePorId(id, disponivel);
-        //atualiza disponibilidade
-        return true;
-    }
-
-    removeExemplar(id: number, estoque: Estoque[]): boolean {
-        // Verifica se existe algum exemplar emprestado
-        const emprestado = estoque.some(e => e.livro_id === id && e.quantidade_emprestada > 0);
-        //some: quando pelo menos um satisfazer a condição
-        // que tem o id q tem um exemplar emprestado
-        if (emprestado) {
-            console.log("Não é possível remover: o exemplar está emprestado.");
-            return false;
+    atualizarStatus(codigo: number, status: "disponivel" | "emprestado"): Estoque {
+        const exemplar = this.buscarExemplar(codigo);
+        if(exemplar.status === status){
+            return exemplar;
         }
 
-        const index = this.estoqueRepo.buscarIndexPorId(id);
-        //pega a posiçao
-        if (index === -1) {
-            console.log("Exemplar não encontrado.");
-            return false;
-        }//retoena false de sele não fpr encontrado
+        exemplar.status = status;
+        exemplar.quantidade_emprestada = status === "emprestado" ? 1 : 0;
+        return exemplar;
+    }
 
-        this.estoqueRepo.removerExemplarPorIndex(index);
-        console.log("Exemplar removido com sucesso.");
-        return true;
+    marcarComoEmprestado(codigo: number): void{
+        const exemplar = this.buscarExemplar(codigo);
+        if (exemplar.status !== "disponivel"){
+            throw new Error("Exemplar não está disponível para empréstimo.");
+        }
+        exemplar.status = "emprestado";
+        exemplar.quantidade_emprestada = 1;
     }
-    listarDisponiveis() {
-        return this.estoqueRepo.listarExemplaresDisponiveis();
+
+    marcarComoDisponivel(codigo: number): void{
+        const exemplar = this.buscarExemplar(codigo);
+        exemplar.status = "disponivel";
+        exemplar.quantidade_emprestada = 0;
     }
-    listar() {
-        return this.estoqueRepo.listarEstoques();
+
+    existeExemplarDoLivro(isbn: string): boolean {
+        return this.estoqueRepository.listarEstoque().some((e) => e.livro_isbn === isbn);
+    }
+
+    getResumoEstoque(isbn: string): { total: number; disponiveis: number } {
+        const exemplares = this.estoqueRepository.listarEstoque().filter((e) => e.livro_isbn === isbn);
+        return{
+            total: exemplares.length,
+            disponiveis: exemplares.filter((e) => e.status === "disponivel").length,
+        };
+}
+
+    removerExemplar(codigo: number): void {
+        const exemplar = this.buscarExemplar(codigo);
+        if(exemplar.status === "emprestado"){
+            throw new Error("Não é possível remover um exemplar emprestado.");
+        }
+
+        const sucesso = this.estoqueRepository.remover(codigo);
+        if(!sucesso){
+            throw new Error("Erro ao remover exemplar.");
+        }
     }
 }

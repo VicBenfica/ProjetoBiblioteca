@@ -1,23 +1,21 @@
+export class Livro{
+    static proximoId: number = 0;
 
-export class Livro {
     id: number;
+    isbn: string;
     titulo: string;
     autor: string;
     editora: string;
     edicao: string;
-    isbn: string;
-    categoria_id: number;
-    //liga com categoria Livro
+    categoriaId: number;
 
-
-
-    constructor(id: number, titulo: string, autor: string, editora: string, edicao: string, isbn: string, categoria_id: number) {
-        this.id = id;
+    constructor(isbn: string, titulo: string, autor: string, editora: string, edicao: string, categoriaId: number){
+        this.id = Livro.proximoId++;
+        this.isbn = isbn;
         this.titulo = titulo;
         this.autor = autor;
         this.editora = editora;
         this.edicao = edicao;
-        this.isbn = isbn;
-        this.categoria_id = categoria_id;
+        this.categoriaId = categoriaId;
     }
 }
