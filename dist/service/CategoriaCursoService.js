@@ -7,8 +7,10 @@ class CategoriaCursoService {
     listarCategorias() {
         return this.categoriaCursoRepository.listarCursos();
     }
+    //retorna todos os cursos cadastrados
     buscarCategorias(id) {
         return this.categoriaCursoRepository.buscarPorId(id);
+        //busca o curso por id
     }
 }
 exports.CategoriaCursoService = CategoriaCursoService;

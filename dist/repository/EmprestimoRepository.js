@@ -14,6 +14,7 @@ class EmprestimoRepository {
     }
     gerarNovoId() {
         return this.idCounter++;
+        //usa o id para gerar novos ids
     }
     //Listar
     listarEmprestimos() {
@@ -29,8 +30,11 @@ class EmprestimoRepository {
     //Registrar devolucao
     atualizarEmprestimo(emprestimo) {
         const index = this.emprestimos.findIndex(e => e.id === emprestimo.id);
+        //posição dentro do array que qr atualizar
         if (index !== -1) {
+            //Se achou, quando não acha é -1
             this.emprestimos[index] = emprestimo;
+            //substitui pelo novo emprestimo
         }
     }
 }

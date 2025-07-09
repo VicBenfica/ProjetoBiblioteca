@@ -9,6 +9,7 @@ class Livro {
     edicao;
     isbn;
     categoria_id;
+    //liga com categoria Livro
     constructor(id, titulo, autor, editora, edicao, isbn, categoria_id) {
         this.id = id;
         this.titulo = titulo;

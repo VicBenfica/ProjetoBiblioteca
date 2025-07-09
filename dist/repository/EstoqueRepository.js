@@ -1,10 +1,11 @@
 "use strict";
+// src/repository/EstoqueRepository.ts
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EstoqueRepository = void 0;
 class EstoqueRepository {
     static instance;
-    estoques = [];
-    idCounter = 1;
+    exemplares = []; // ALTERADO: de 'estoques' para 'exemplares'
+    codigoCounter = 1; // Contador para gerar 'codigo' único
     constructor() { }
     static getInstance() {
         if (!this.instance) {
@@ -12,38 +13,48 @@ class EstoqueRepository {
         }
         return this.instance;
     }
-    insereExemplar(exemplar) {
-        this.estoques.push(exemplar);
+    // NOVO MÉTODO: para gerar um novo código de exemplar
+    gerarNovoCodigo() {
+        return this.codigoCounter++;
     }
-    buscarPorId(id) {
-        return this.estoques.find(e => e.id === id);
+    inserirExemplar(exemplar) {
+        this.exemplares.push(exemplar);
     }
-    atualizarDisponibilidadePorId(id, disponivel) {
-        const index = this.buscarIndexPorId(id);
-        if (index !== -1) {
-            this.estoques[index].disponivel = disponivel;
+    // ALTERADO: Buscar exemplar por código (antigo buscarPorId)
+    buscarPorCodigo(codigo) {
+        return this.exemplares.find(e => e.codigo === codigo);
+    }
+    // NOVO MÉTODO: Atualizar status de um exemplar por código
+    atualizarStatus(codigo, status) {
+        const exemplar = this.buscarPorCodigo(codigo);
+        if (exemplar) {
+            exemplar.status = status;
+            // Não é necessário chamar `atualizarEstoque` aqui se a modificação for direta na referência
         }
     }
+    // ALTERADO: Atualizar exemplar completo (reintroduzido para atualizações gerais)
     atualizarEstoque(exemplarAtualizado) {
-        const index = this.estoques.findIndex(e => e.id === exemplarAtualizado.id);
+        const index = this.exemplares.findIndex(e => e.codigo === exemplarAtualizado.codigo);
         if (index !== -1) {
-            this.estoques[index] = exemplarAtualizado;
+            this.exemplares[index] = exemplarAtualizado;
         }
     }
-    removerExemplarPorIndex(index) {
-        this.estoques.splice(index, 1);
-    }
+    // REMOVIDO: removerExemplarPorIndex (agora usaremos um método 'remover' mais direto)
+    // ALTERADO: Listar exemplares com status 'disponivel'
     listarExemplaresDisponiveis() {
-        return this.estoques.filter(estoque => estoque.disponivel);
+        return this.exemplares.filter(estoque => estoque.status === 'disponivel');
     }
-    listarEstoques() {
-        return this.estoques;
+    // ALTERADO: Listar todos os exemplares (renomeado de listarEstoques)
+    listarEstoque() {
+        return this.exemplares;
     }
-    gerarNovoId() {
-        return this.idCounter++;
-    }
-    buscarIndexPorId(id) {
-        return this.estoques.findIndex(e => e.id === id);
+    // NOVO MÉTODO: Remover exemplar por código (mais direto)
+    remover(codigo) {
+        const index = this.exemplares.findIndex(e => e.codigo === codigo);
+        if (index === -1)
+            return false;
+        this.exemplares.splice(index, 1);
+        return true;
     }
 }
 exports.EstoqueRepository = EstoqueRepository;

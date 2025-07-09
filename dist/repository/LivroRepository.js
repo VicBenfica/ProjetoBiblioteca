@@ -19,15 +19,17 @@ class LivroRepository {
     removerLivroPorIndex(index) {
         this.livros.splice(index, 1);
     }
-    listarLivros(id) {
-        return this.livros.find(livro => livro.id === id);
+    listarLivros() {
+        return this.livros;
     }
     buscarIndexPorId(id) {
         return this.livros.findIndex(l => l.id === id);
     }
-    //detalhes
-    buscarLivroPorId(id) {
+    buscarPorId(id) {
         return this.livros.find(l => l.id === id);
+    } //Busca os detalhes 
+    buscarLivroPorIsbn(isbn) {
+        return this.livros.find(l => l.isbn === isbn);
     }
 }
 exports.LivroRepository = LivroRepository;
