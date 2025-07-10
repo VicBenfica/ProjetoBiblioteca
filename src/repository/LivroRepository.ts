@@ -1,4 +1,4 @@
-import { Livro } from "../model/Livro";
+import { Livro } from "../model/entity/Livro";
 
 type DadosAtualizacaoLivro = {
     titulo?: string;
