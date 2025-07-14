@@ -1,8 +1,8 @@
-import { Emprestimo } from "../model/entity/Emprestimo";
+import { EmprestimoEntity } from "../model/entity/EmprestimoEntity";
 
 export class EmprestimoRepository {
     private static instance: EmprestimoRepository;
-    private emprestimos: Emprestimo[] = [];
+    private emprestimos: EmprestimoEntity[] = [];
 
     private constructor() {}
 
@@ -13,15 +13,15 @@ export class EmprestimoRepository {
     return this.instance;
     }
 
-    inserir(emprestimo: Emprestimo): void {
+    inserir(emprestimo: EmprestimoEntity): void {
         this.emprestimos.push(emprestimo);
     }
 
-    listarEmprestimos(): Emprestimo[] {
+    listarEmprestimos(): EmprestimoEntity[] {
         return this.emprestimos;
     }
 
-    buscarEmprestimoPorId(id: number): Emprestimo | undefined {
+    buscarEmprestimoPorId(id: number): EmprestimoEntity | undefined {
         return this.emprestimos.find(e => e.id === id);
     }
 
@@ -34,11 +34,11 @@ export class EmprestimoRepository {
         return false;
     }
 
-    listarPorUsuario(cpf: string): Emprestimo[] {
+    listarPorUsuario(cpf: string): EmprestimoEntity[] {
         return this.emprestimos.filter(e => e.cpfUsuario === cpf);
     }
 
-    emprestimosAbertos(cpf: string): Emprestimo[] {
+    emprestimosAbertos(cpf: string): EmprestimoEntity[] {
         return this.emprestimos.filter(e => e.cpfUsuario === cpf && !e.dataEntrega);
     }
 }

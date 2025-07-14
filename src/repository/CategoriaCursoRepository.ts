@@ -7,7 +7,7 @@ export class CategoriaCursoRepository {
 
 
     private constructor() {
-
+        this.criarTable();
     }
 
     public static getInstance() {
@@ -17,15 +17,9 @@ export class CategoriaCursoRepository {
         return this.instance;
     }
 
-    private imprimeResult(err:any, result:any){
-        if(result != undefined){
-            console.log("Dentro callback", result);
-        }
-    }
 
 
-   
-    private async createTable() {
+    private async criarTable() {
         const query = `CREATE TABLE IF NOT EXISTS biblioteca.CategoriaCurso(
         id INT AUTO_INCREMENT PRIMARY KEY, 
         nome VARCHAR(100) NOT NULL
@@ -33,23 +27,64 @@ export class CategoriaCursoRepository {
 
         try {
             const resultado = await executarComandoSQL(query, []);
-            console.log('Query executada com sucesso:', resultado);
+            console.log('Tabela de categoria de cursos criada!', resultado);
         } catch (err) {
             console.error('Erro ao executar a query:', err);
         }
     }
 
-    insertProduct(name: string, price: number){
+    public async inserirCategoriasPadrao() {
+        const categorias = ["ADS", "Pedagogia", "Administração"];
+        await executarComandoSQL("CREATE TABLE IF NOT EXISTS biblioteca.CategoriaCurso (id INT AUTO_INCREMENT PRIMARY KEY, nome VARCHAR(100) NOT NULL)", []);
+        for (const nome of categorias) {
+            try {
+                const resultado = await executarComandoSQL(
+                    "INSERT IGNORE INTO biblioteca.CategoriaCurso (nome) VALUES (?)", [nome]);
+                console.log('Categoria criada com sucesso:', resultado);
+            } catch (err) {
+                console.error('Erro ao criar categoria:', err);
+
+            }
+        }
+
+    }
+
+
+
+    public async listarCategorias(): Promise<CategoriaCurso[]> {
+        const categorias: CategoriaCurso[] = [];
+
         try {
-            const resultado = executarComandoSQL(
-                "INSERT INTO vendas.Product (name, price) VALUES (?, ?)",
-                [name, price], this.imprimeResult
-            );
-            console.log('Produto inserido com sucesso:', resultado);
+            const resultado = await executarComandoSQL("SELECT * FROM biblioteca.CategoriaCurso", []);
+
+            for (let i = 0; i < resultado.length; i++) {
+                const dados = resultado[i];
+                const categoria = new CategoriaCurso(dados.id, dados.nome);
+                categorias.push(categoria);
+            }
+            return categorias;
         } catch (err) {
-            console.error('Erro ao inserir o produto:', err);
-            if( err instanceof Error)
-                throw err
+            console.error('Erro ao listar categorias:', err);
+            return [];
         }
     }
+
+     public async buscarPorId(id: number): Promise<CategoriaCurso | null> {
+            const query = `SELECT * FROM biblioteca.CategoriaLivro WHERE id = ?`;
+            try {
+                const resultado = await executarComandoSQL(query, [id]);
+    
+                if (resultado && resultado.length > 0) {
+                    const dados = resultado[0];
+                    return new CategoriaCurso(dados.id, dados.nome);
+                }
+    
+                return null;
+            } catch (err) {
+                console.error("Erro ao buscar categoria por ID:", err);
+                return null;
+            }
+        }
+
+
 }

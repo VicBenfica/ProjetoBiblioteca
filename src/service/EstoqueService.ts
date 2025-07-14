@@ -1,89 +1,74 @@
-import { Estoque } from "../model/entity/Estoque";
+import { EstoqueEntity } from "../model/entity/EstoqueEntity";
 import { EstoqueRepository } from "../repository/EstoqueRepository";
 import { LivroRepository } from "../repository/LivroRepository";
 
-export class EstoqueService{
+export class EstoqueService {
     estoqueRepository: EstoqueRepository = EstoqueRepository.getInstance();
     livroRepository: LivroRepository = LivroRepository.getInstance();
 
-    cadastrarExemplar(codigo: number, livro_isbn: string){
-        if(!codigo || !livro_isbn){
-            throw new Error("ISBN e código do livro é obrigatório!");
+    public async cadastrarExemplar(codigo: number, livro_isbn: string): Promise<EstoqueEntity> {
+        if (!codigo || !livro_isbn) {
+            throw new Error("ISBN e código do livro são obrigatórios!");
         }
 
-        const livro = this.livroRepository.buscarLivroPorISBN(livro_isbn);
-        if(!livro){
+        const livro = await this.livroRepository.buscarLivroPorISBN(livro_isbn);
+        if (!livro) {
             throw new Error("Livro não encontrado.");
         }
 
-        const novoExemplar = new Estoque(codigo, livro_isbn, 1, 0);
-        const existente = this.estoqueRepository.buscarPorCodigo(novoExemplar.codigo);
-        if(existente){
+        const existente = await this.estoqueRepository.buscarPorCodigo(codigo);
+        if (existente) {
             throw new Error("Código já utilizado. Tente novamente.");
         }
-        this.estoqueRepository.inserirExemplar(novoExemplar);
-        return novoExemplar;
+
+        const novoExemplar = new EstoqueEntity(codigo, livro_isbn, 1, 0, "disponivel");
+        return await this.estoqueRepository.inserirExemplar(novoExemplar);
     }
 
-    listarDisponiveis(): Estoque[] {
-        return this.estoqueRepository.listarEstoque().filter(e => e.status === "disponivel");
+    public async listarDisponiveis(): Promise<EstoqueEntity[]> {
+        const todos = await this.estoqueRepository.listarEstoque();
+        return todos.filter(e => e.status === "disponivel");
     }
 
-    buscarExemplar(codigo: number): Estoque {
-        const exemplar = this.estoqueRepository.buscarPorCodigo(codigo);
-        if(!exemplar){
+    public async buscarExemplar(codigo: number): Promise<EstoqueEntity> {
+        const exemplar = await this.estoqueRepository.buscarPorCodigo(codigo);
+        if (!exemplar) {
             throw new Error("Exemplar não encontrado.");
         }
         return exemplar;
     }
 
-    atualizarStatus(codigo: number, status: "disponivel" | "emprestado"): Estoque {
-        const exemplar = this.buscarExemplar(codigo);
-        if(exemplar.status === status){
-            return exemplar;
-        }
+    public async atualizarStatus(codigo: number, status: "disponivel" | "emprestado"): Promise<EstoqueEntity> {
+        const exemplar = await this.buscarExemplar(codigo);
+        if (exemplar.status === status) return exemplar;
 
-        exemplar.status = status;
-        exemplar.quantidade_emprestada = status === "emprestado" ? 1 : 0;
-        return exemplar;
+        await this.estoqueRepository.atualizarStatus(codigo, status);
+        return await this.buscarExemplar(codigo);
     }
 
-    marcarComoEmprestado(codigo: number): void{
-        const exemplar = this.buscarExemplar(codigo);
-        if (exemplar.status !== "disponivel"){
+    public async marcarComoEmprestado(codigo: number): Promise<void> {
+        const exemplar = await this.buscarExemplar(codigo);
+        if (exemplar.status !== "disponivel") {
             throw new Error("Exemplar não está disponível para empréstimo.");
         }
-        exemplar.status = "emprestado";
-        exemplar.quantidade_emprestada = 1;
+
+        await this.estoqueRepository.atualizarStatus(codigo, "emprestado");
     }
 
-    marcarComoDisponivel(codigo: number): void{
-        const exemplar = this.buscarExemplar(codigo);
-        exemplar.status = "disponivel";
-        exemplar.quantidade_emprestada = 0;
+    public async marcarComoDisponivel(codigo: number): Promise<void> {
+        await this.estoqueRepository.atualizarStatus(codigo, "disponivel");
     }
 
-    existeExemplarDoLivro(isbn: string): boolean {
-        return this.estoqueRepository.listarEstoque().some((e) => e.livro_isbn === isbn);
+    public async existeExemplarDoLivro(isbn: string): Promise<boolean> {
+        const exemplares = await this.estoqueRepository.buscarPorISBN(isbn) || [];
+        return exemplares.length > 0;
     }
 
-    getResumoEstoque(isbn: string): { total: number; disponiveis: number } {
-        const exemplares = this.estoqueRepository.listarEstoque().filter((e) => e.livro_isbn === isbn);
-        return{
+    public async getResumoEstoque(isbn: string): Promise<{ total: number; disponiveis: number }> {
+        const exemplares = await this.estoqueRepository.buscarPorISBN(isbn) || [];
+        return {
             total: exemplares.length,
-            disponiveis: exemplares.filter((e) => e.status === "disponivel").length,
+            disponiveis: exemplares.filter(e => e.status === "disponivel").length
         };
-}
-
-    removerExemplar(codigo: number): void {
-        const exemplar = this.buscarExemplar(codigo);
-        if(exemplar.status === "emprestado"){
-            throw new Error("Não é possível remover um exemplar emprestado.");
-        }
-
-        const sucesso = this.estoqueRepository.remover(codigo);
-        if(!sucesso){
-            throw new Error("Erro ao remover exemplar.");
-        }
     }
 }

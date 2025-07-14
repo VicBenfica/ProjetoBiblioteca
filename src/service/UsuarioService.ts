@@ -1,182 +1,181 @@
-import { Usuario } from "../model/entity/Usuario";
+import { Usuario } from "../model/entity/UsuarioEntity";
 import { UsuarioRepository } from "../repository/UsuarioRepository";
 import { CategoriaUsuarioService } from "./CategoriaUsuarioService";
 import { CursoService } from "./CategoriaCursoService";
 import { EmprestimoRepository } from "../repository/EmprestimoRepository";
 
 type DadosAtualizacaoUsuario = {
-    cpf?: string;
-    nome?: string;
-    email?: string;
-    categoriaId?: number;
-    cursoId?: number;
-}
+  cpf?: string;
+  nome?: string;
+  email?: string;
+  categoriaId?: number;
+  cursoId?: number;
+};
 
-export class UsuarioService{
-    usuarioRepository: UsuarioRepository = UsuarioRepository.getInstance();
-    categoriaService = new CategoriaUsuarioService();
-    cursoService = new CursoService();
-    emprestimoRepository: EmprestimoRepository = EmprestimoRepository.getInstance();
+export class UsuarioService {
+  usuarioRepository = UsuarioRepository.getInstance();
+  categoriaService = new CategoriaUsuarioService();
+  cursoService = new CursoService();
+  emprestimoRepository = EmprestimoRepository.getInstance();
 
-    cadastrarUsuario(usuarioData: any): Usuario {
-        const {cpf, nome, email, categoriaId, cursoId} = usuarioData;
-        if(!cpf || !nome || !email || !categoriaId){
-            throw new Error("Informações incompletas");
-        }
-        if(!Usuario.validarCPF(cpf)){
-            throw new Error("CPF Inválido!");
-        }
-        if(this.usuarioRepository.buscarUsuarioPorCPF(cpf)){
-            throw new Error("CPF já cadastrado!");
-        }
-        
-        const categoria = this.categoriaService.buscarPorId(categoriaId);
-        if (!categoria) {
-            throw new Error("Categoria inválida!");
-        }
-        if (categoriaId !== 3) {
-            if (cursoId === undefined) {
-                throw new Error("Curso é obrigatório para alunos e professores.");
-            }
-            const curso = this.cursoService.buscarPorId(cursoId);
-            if (!curso) {
-                throw new Error("Curso inválido!");
-            }
-        }
+  cadastrarUsuario(usuarioData: any): Usuario {
+    const { cpf, nome, email, categoriaId, cursoId } = usuarioData;
 
-        const cursoFinal = categoriaId === 3 ? 0 : cursoId;
-
-        const novoUsuario = new Usuario(cpf, nome, email, categoriaId, cursoFinal);
-        this.usuarioRepository.InserirUsuario(novoUsuario);
-        return novoUsuario;
+    if (!cpf || !nome || !email || !categoriaId) {
+      throw new Error("Informações incompletas");
     }
 
-    listarUsuarioComFiltro(filtros: any): Usuario[]{
-        const {nome, status, categoriaId, cursoId} = filtros;
-        const usuarios = this.usuarioRepository.listarUsuarios();
-
-        return usuarios.filter(usuario => {
-            const combinaNomes = nome ? usuario.nome.toLowerCase().includes(nome.toLowerCase()): true;
-            const combinaStatus = status? usuario.status === status : true;
-            const combinaCatId = categoriaId? usuario.categoriaId === categoriaId: true;
-            const combinaCurId = cursoId? usuario.cursoId === cursoId : true;
-            return combinaNomes && combinaStatus && combinaCatId && combinaCurId;
-        });
+    if (!Usuario.validarCPF(cpf)) {
+      throw new Error("CPF inválido!");
     }
 
-    buscarUsuario(cpf: string){
-        if(!Usuario.validarCPF(cpf)){
-            throw new Error("CPF inválido!");
-        }
-
-        const usuario = this.usuarioRepository.buscarUsuarioPorCPF(cpf);
-        
-        if(!usuario){
-            throw new Error("Usuario não encontrado!");
-        }
-
-        return usuario;
+    if (this.usuarioRepository.buscarUsuarioPorCPF(cpf)) {
+      throw new Error("CPF já cadastrado!");
     }
 
-    atualizarUsuario(cpf: string, novosDados: DadosAtualizacaoUsuario): Usuario{
-        const usuario = this.usuarioRepository.buscarUsuarioPorCPF(cpf);
-        if(!usuario){
-            throw new Error("Usuário não encontrado!");
-        }
-
-        if (!novosDados.nome && !novosDados.email && !novosDados.categoriaId && !novosDados.cursoId) {
-            throw new Error("Nenhum dado informado para atualização.");
-        }
-
-        if(novosDados.cpf && novosDados.cpf !== cpf){
-            throw new Error("Não é permitido alterar o CPF!");
-        }
-
-        if(novosDados.categoriaId){
-            const categoria = this.categoriaService.buscarPorId(novosDados.categoriaId);
-            if(!categoria){
-                throw new Error("Categoria Inválida!");
-            }
-        }
-
-        if(novosDados.cursoId){
-            const curso = this.cursoService.buscarPorId(novosDados.cursoId);
-            if(!curso){
-                throw new Error("Curso Inválido!");
-            }
-        }
-        
-        const usuarioAtualizado = this.usuarioRepository.atualizarDadosUsuario(cpf, novosDados);
-        if(!usuarioAtualizado){
-            throw new Error("Erro inesperado ao atualizar usuário!");
-        }
-        return usuarioAtualizado;
+    const categoria = this.categoriaService.buscarPorId(categoriaId);
+    if (!categoria) {
+      throw new Error("Categoria inválida!");
     }
 
-    aplicarSuspensao(cpf: string, diasAtraso: number){
-        const usuario = this.usuarioRepository.buscarUsuarioPorCPF(cpf);
-        if(!usuario) return;
-
-        const diasSuspensao = diasAtraso * 3;
-        usuario.diaSuspensao = diasSuspensao;
-
-        if(diasSuspensao > 60){
-            usuario.status = "suspenso";
-        }
-
-        const emprestimos = this.emprestimoRepository.listarPorUsuario(cpf);
-        const atrasados = emprestimos.filter(e => e.diasAtraso && e.diasAtraso > 0);
-
-        if(diasSuspensao > 60){
-            usuario.status = "suspenso";
-        }
-        if(atrasados.length > 2){
-            usuario.status = "inativo";
-        }
-
+    if (categoriaId !== 3) {
+      if (cursoId === undefined) {
+        throw new Error("Curso é obrigatório para alunos e professores.");
+      }
+      const curso = this.cursoService.buscarPorId(cursoId);
+      if (!curso) {
+        throw new Error("Curso inválido!");
+      }
     }
 
-    removerUsuario(cpf: string){
-        if(!Usuario.validarCPF(cpf)){
-            throw new Error("CPF Inválido!");
-        }
+    const cursoFinal = categoriaId === 3 ? 0 : cursoId;
+    const novoUsuario = new Usuario(cpf, nome, email, categoriaId, cursoFinal);
+    this.usuarioRepository.InserirUsuario(novoUsuario);
 
-        const usuario = this.usuarioRepository.buscarUsuarioPorCPF(cpf);
-        if(!usuario){
-            throw new Error("Usuário não encontrado.");
-        }
+    return novoUsuario;
+  }
 
+  listarUsuarioComFiltro(filtros: any): Usuario[] {
+    const { nome, status, categoriaId, cursoId } = filtros;
+    const usuarios = this.usuarioRepository.listarUsuarios();
 
-        const emprestimosAtivos = this.emprestimoRepository.emprestimosAbertos(cpf);
-        if(emprestimosAtivos.length > 0){
-            throw new Error("Usuário não pode ser removido: possui empréstimos em aberto.");
-        }
+    return usuarios.filter((usuario) => {
+      const combinaNomes = nome ? usuario.nome.toLowerCase().includes(nome.toLowerCase()) : true;
+      const combinaStatus = status ? usuario.status === status : true;
+      const combinaCatId = categoriaId ? usuario.categoriaId === categoriaId : true;
+      const combinaCurId = cursoId ? usuario.cursoId === cursoId : true;
+      return combinaNomes && combinaStatus && combinaCatId && combinaCurId;
+    });
+  }
 
-        const sucesso = this.usuarioRepository.removerUsuario(cpf);
-        if (!sucesso) {
-            throw new Error("Erro ao remover usuário.");
-        }
+  buscarUsuario(cpf: string): Usuario {
+    if (!Usuario.validarCPF(cpf)) {
+      throw new Error("CPF inválido!");
     }
 
-    verificarInativacaoUsuario(cpf: string): void {
-        const usuario = this.usuarioRepository.buscarUsuarioPorCPF(cpf);
-        if (!usuario) return;
-
-        const emprestimos = this.emprestimoRepository.listarPorUsuario(cpf);
-        const hoje = new Date();
-
-        const atrasosGraves = emprestimos.filter(e => {
-            if (!e.dataEntrega && e.dataDevolucao) {
-                const diff = hoje.getTime() - e.dataDevolucao.getTime();
-                const diasAtraso = diff / (1000 * 60 * 60 * 24);
-                return diasAtraso > 60;
-            }
-            return false;
-        });
-
-        if (atrasosGraves.length > 0) {
-        usuario.status = "inativo";
-        usuario.diaSuspensao = 0;
-        }
+    const usuario = this.usuarioRepository.buscarUsuarioPorCPF(cpf);
+    if (!usuario) {
+      throw new Error("Usuário não encontrado!");
     }
+
+    return usuario;
+  }
+
+  atualizarUsuario(cpf: string, novosDados: DadosAtualizacaoUsuario): Usuario {
+    const usuario = this.usuarioRepository.buscarUsuarioPorCPF(cpf);
+    if (!usuario) {
+      throw new Error("Usuário não encontrado!");
+    }
+
+    if (!novosDados.nome && !novosDados.email && !novosDados.categoriaId && !novosDados.cursoId) {
+      throw new Error("Nenhum dado informado para atualização.");
+    }
+
+    if (novosDados.cpf && novosDados.cpf !== cpf) {
+      throw new Error("Não é permitido alterar o CPF!");
+    }
+
+    if (novosDados.categoriaId) {
+      const categoria = this.categoriaService.buscarPorId(novosDados.categoriaId);
+      if (!categoria) {
+        throw new Error("Categoria inválida!");
+      }
+    }
+
+    if (novosDados.cursoId) {
+      const curso = this.cursoService.buscarPorId(novosDados.cursoId);
+      if (!curso) {
+        throw new Error("Curso inválido!");
+      }
+    }
+
+    const usuarioAtualizado = this.usuarioRepository.atualizarDadosUsuario(cpf, novosDados);
+    if (!usuarioAtualizado) {
+      throw new Error("Erro inesperado ao atualizar usuário!");
+    }
+
+    return usuarioAtualizado;
+  }
+
+  aplicarSuspensao(cpf: string, diasAtraso: number): void {
+    const usuario = this.usuarioRepository.buscarUsuarioPorCPF(cpf);
+    if (!usuario) return;
+
+    const diasSuspensao = diasAtraso * 3;
+    usuario.diaSuspensao = diasSuspensao;
+
+    if (diasSuspensao > 60) {
+      usuario.status = "suspenso";
+    }
+
+    const emprestimos = this.emprestimoRepository.listarPorUsuario(cpf);
+    const atrasados = emprestimos.filter((e) => e.diasAtraso && e.diasAtraso > 0);
+
+    if (atrasados.length > 2) {
+      usuario.status = "inativo";
+    }
+  }
+
+  removerUsuario(cpf: string): void {
+    if (!Usuario.validarCPF(cpf)) {
+      throw new Error("CPF inválido!");
+    }
+
+    const usuario = this.usuarioRepository.buscarUsuarioPorCPF(cpf);
+    if (!usuario) {
+      throw new Error("Usuário não encontrado.");
+    }
+
+    const emprestimosAtivos = this.emprestimoRepository.emprestimosAbertos(cpf);
+    if (emprestimosAtivos.length > 0) {
+      throw new Error("Usuário não pode ser removido: possui empréstimos em aberto.");
+    }
+
+    const sucesso = this.usuarioRepository.removerUsuario(cpf);
+    if (!sucesso) {
+      throw new Error("Erro ao remover usuário.");
+    }
+  }
+
+  verificarInativacaoUsuario(cpf: string): void {
+    const usuario = this.usuarioRepository.buscarUsuarioPorCPF(cpf);
+    if (!usuario) return;
+
+    const emprestimos = this.emprestimoRepository.listarPorUsuario(cpf);
+    const hoje = new Date();
+
+    const atrasosGraves = emprestimos.filter((e) => {
+      if (!e.dataEntrega && e.dataDevolucao) {
+        const diff = hoje.getTime() - e.dataDevolucao.getTime();
+        const diasAtraso = diff / (1000 * 60 * 60 * 24);
+        return diasAtraso > 60;
+      }
+      return false;
+    });
+
+    if (atrasosGraves.length > 0) {
+      usuario.status = "inativo";
+      usuario.diaSuspensao = 0;
+    }
+  }
 }

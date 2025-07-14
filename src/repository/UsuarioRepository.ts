@@ -1,4 +1,4 @@
-import {Usuario} from "../model/entity/Usuario"
+import {Usuario} from "../model/entity/UsuarioEntity"
 
 type DadosAtualizacaoUsuario = {
     nome?: string;

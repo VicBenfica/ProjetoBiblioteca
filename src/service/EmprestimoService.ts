@@ -1,4 +1,4 @@
-import { Emprestimo } from "../model/entity/Emprestimo";
+import { EmprestimoEntity } from "../model/entity/EmprestimoEntity";
 import { EmprestimoRepository } from "../repository/EmprestimoRepository";
 import { UsuarioRepository } from "../repository/UsuarioRepository";
 import { EstoqueRepository } from "../repository/EstoqueRepository";
@@ -17,61 +17,72 @@ export class EmprestimoService{
     usuarioService = new UsuarioService();
     estoqueService = new EstoqueService();
 
-    registrarEmprestimo(cpfUsuario: string, codigoExemplar: number): Emprestimo{
-        const usuario = this.usuarioRepository.buscarUsuarioPorCPF(cpfUsuario);
-        if(!usuario){
-            throw new Error("Usuário não encontrado!");
-        }
-        this.usuarioService.verificarInativacaoUsuario(cpfUsuario);
-        if(usuario.status !== "ativo"){
-            throw new Error("Usuário não está apto para empréstimo.");
-        }
-        if(usuario.diaSuspensao && usuario.diaSuspensao > 0){
-            throw new Error("Usuário suspenso.");
-        }
-
-        const exemplar = this.estoqueRepository.buscarPorCodigo(codigoExemplar);
-        if(!exemplar || exemplar.status !== "disponivel"){
-            throw new Error("Exemplar não disponível.");
-        }
-
-        const categoria = this.catUsuRepository.buscarPorId(usuario.categoriaId);
-        if(!categoria){
-            throw new Error("Categoria do usuário inválida.");
-        }
-
-        const livro = this.livroRepository.buscarLivroPorISBN(exemplar.livro_isbn);
-        if (!livro) {
-            throw new Error("Livro associado ao exemplar não encontrado.");
-        }
-
-        const emprestimosAtivos = this.emprestimoRepository.emprestimosAbertos(cpfUsuario);
-        const limiteQtd = categoria.nome === "Professor" ? 5 : 3;
-        const limiteDias = categoria.nome === "Aluno" && livro && 
-        livro.categoriaId === usuario.cursoId ? 30 : categoria.nome === "Aluno" ? 15 : 40;
-
-        if (emprestimosAtivos.length >= limiteQtd) {
-            throw new Error("Usuário atingiu o limite de empréstimos!");
-        }
-
-        const dataEmprestimo = new Date();
-        const dataDevolucao = new Date();
-        dataDevolucao.setDate(dataEmprestimo.getDate() + limiteDias);
-
-        const novoEmprestimo = new Emprestimo(cpfUsuario, codigoExemplar);
-        this.estoqueService.marcarComoEmprestado(codigoExemplar);
-        novoEmprestimo.dataEmprestimo = dataEmprestimo;
-        novoEmprestimo.dataDevolucao = dataDevolucao;
-
-        this.emprestimoRepository.inserir(novoEmprestimo);
-        return novoEmprestimo;
+    public async registrarEmprestimo(cpfUsuario: string, codigoExemplar: number): Promise<EmprestimoEntity> {
+    const usuario = await this.usuarioRepository.buscarUsuarioPorCPF(cpfUsuario);
+    if (!usuario) {
+        throw new Error("Usuário não encontrado!");
     }
 
-    listarEmprestimos(): Emprestimo[]{
+    await this.usuarioService.verificarInativacaoUsuario(cpfUsuario); // supondo que esse método seja async
+
+    if (usuario.status !== "ativo") {
+        throw new Error("Usuário não está apto para empréstimo.");
+    }
+
+    if (usuario.diaSuspensao && usuario.diaSuspensao > 0) {
+        throw new Error("Usuário suspenso.");
+    }
+
+    const exemplar = await this.estoqueRepository.buscarPorCodigo(codigoExemplar);
+    if (!exemplar || exemplar.status !== "disponivel") {
+        throw new Error("Exemplar não disponível.");
+    }
+
+    const categoria = await this.catUsuRepository.buscarPorId(usuario.categoriaId);
+    if (!categoria) {
+        throw new Error("Categoria do usuário inválida.");
+    }
+
+    const livro = await this.livroRepository.buscarLivroPorISBN(exemplar.livro_isbn);
+    if (!livro) {
+        throw new Error("Livro associado ao exemplar não encontrado.");
+    }
+
+    const emprestimosAtivos = await this.emprestimoRepository.emprestimosAbertos(cpfUsuario);
+
+    const limiteQtd = categoria.nome === "Professor" ? 5 : 3;
+
+    const limiteDias =
+        categoria.nome === "Aluno" && livro.categoriaId === usuario.cursoId
+            ? 30
+            : categoria.nome === "Aluno"
+            ? 15
+            : 40;
+
+    if (emprestimosAtivos.length >= limiteQtd) {
+        throw new Error("Usuário atingiu o limite de empréstimos!");
+    }
+
+    const dataEmprestimo = new Date();
+    const dataDevolucao = new Date();
+    dataDevolucao.setDate(dataEmprestimo.getDate() + limiteDias);
+
+    const novoEmprestimo = new EmprestimoEntity(cpfUsuario, codigoExemplar);
+    novoEmprestimo.dataEmprestimo = dataEmprestimo;
+    novoEmprestimo.dataDevolucao = dataDevolucao;
+
+    await this.estoqueService.marcarComoEmprestado(codigoExemplar);
+    await this.emprestimoRepository.inserir(novoEmprestimo);
+
+    return novoEmprestimo;
+}
+
+
+    listarEmprestimos(): EmprestimoEntity[]{
         return this.emprestimoRepository.listarEmprestimos();
     }
 
-    registrarDevolucao(id: number): Emprestimo{
+    registrarDevolucao(id: number): EmprestimoEntity{
         const emprestimo = this.emprestimoRepository.buscarEmprestimoPorId(id);
         if (emprestimo === undefined|| emprestimo.dataEntrega) {
             throw new Error("Empréstimo não encontrado ou já devolvido.");

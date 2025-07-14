@@ -1,10 +1,10 @@
-import { CursoRepository } from "../repository/CategoriaCursoRepository";
+import { CategoriaCursoRepository } from "../repository/CategoriaCursoRepository";
 
 export class CursoService{
-    cursoRepository = CursoRepository.getInstance();
+    cursoRepository = CategoriaCursoRepository.getInstance();
 
     listarCursos(){
-        return this.cursoRepository.listarCursos();
+        return this.cursoRepository.listarCategorias();
     }
 
     buscarPorId(id: number){

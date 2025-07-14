@@ -1,4 +1,4 @@
-export class Emprestimo{
+export class EmprestimoEntity{
     static proximoId: number = 1;
 
     id: number;
@@ -11,7 +11,7 @@ export class Emprestimo{
     suspencaoAte?: Date;
 
     constructor(cpfUsuario: string, codigoExemplar: number){
-        this.id = Emprestimo.proximoId++;
+        this.id = EmprestimoEntity.proximoId++;
         this.cpfUsuario = cpfUsuario;
         this.codigoExemplar = codigoExemplar;
         this.dataEmprestimo = new Date();

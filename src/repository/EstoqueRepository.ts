@@ -1,34 +1,64 @@
-import {Estoque} from '../model/entity/Estoque';
+import { executarComandoSQL } from '../database/mysql';
+import { EstoqueEntity } from '../model/entity/EstoqueEntity';
 
-export class EstoqueRepository{
+export class EstoqueRepository {
     private static instance: EstoqueRepository;
-    private exemplares: Estoque[] = [];
+    private exemplares: EstoqueEntity[] = [];
 
-    private constructor(){}
+    private constructor() { }
 
-    public static getInstance(): EstoqueRepository{
-        if(!this.instance) {
+    public static getInstance(): EstoqueRepository {
+        if (!this.instance) {
             this.instance = new EstoqueRepository();
         }
         return this.instance;
     }
 
-    inserirExemplar(exemplar: Estoque){
-        this.exemplares.push(exemplar);
+    public async inserirExemplar(exemplar: EstoqueEntity): Promise<EstoqueEntity> {
+        const query = `
+        INSERT INTO biblioteca.Estoque (livro_isbn, quantidade, quantidade_emprestada, status)
+        VALUES (?, ?, ?, ?)`;
+
+        const valores = [
+            exemplar.livro_isbn,
+            exemplar.quantidade,
+            exemplar.quantidade_emprestada,
+            exemplar.status
+        ];
+
+        const resultado = await executarComandoSQL(query, valores);
+
+        // Retorna exemplar com ID gerado
+        return new EstoqueEntity(
+            resultado.insertId,
+            exemplar.livro_isbn,
+            exemplar.quantidade,
+            exemplar.quantidade_emprestada,
+            exemplar.status
+        );
     }
 
-    buscarPorISBN(isbn:string): Estoque | undefined{
-        return this.exemplares.find(exemplar => exemplar.livro_isbn === isbn);
+
+    public async buscarPorISBN(isbn: string): Promise<EstoqueEntity[]> {
+        const query = `SELECT * FROM biblioteca.Estoque WHERE livro_isbn = ?`;
+        const resultado = await executarComandoSQL(query, [isbn]);
+
+        if (!resultado || resultado.length === 0) return [];
+
+        return resultado.map((row: any) =>
+            new EstoqueEntity(row.codigo, row.livro_isbn, row.quantidade, row.quantidade_emprestada, row.status)
+        );
     }
 
-    buscarPorCodigo(codigo: number): Estoque | undefined{
+
+    buscarPorCodigo(codigo: number): EstoqueEntity | undefined {
         return this.exemplares.find(exemplar => exemplar.codigo === codigo);
     }
 
-    listarEstoque(): Estoque[]{
+    listarEstoque(): EstoqueEntity[] {
         return this.exemplares;
     }
-    
+
     atualizarStatus(codigo: number, status: "emprestado" | "disponivel"): boolean {
         const exemplar = this.buscarPorCodigo(codigo);
         if (!exemplar) return false;
