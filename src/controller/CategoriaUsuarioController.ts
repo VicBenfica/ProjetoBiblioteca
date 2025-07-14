@@ -1,22 +1,25 @@
 import { CategoriaUsuarioService } from "../service/CategoriaUsuarioService";
 import { Request, Response } from "express";
+import { Body, Controller, Delete, Get, Path, Post, Put, Query, Res, Route, Tags, TsoaResponse } from "tsoa";
+import { BasicResponseDto } from "../model/dto/BasicResponseDto";
 
-export class CategoriaUsuarioController{
-    private catUsuService = new CategoriaUsuarioService();
+@Route("categoria-usuario")
+@Tags("Categoria de Usuário")
 
-    listarCategorias(req: Request, res: Response){
-        try{
-            const categoria = this.catUsuService.listarCategorias();
-            res.status(201).json(categoria);
-        }
-        catch(error: unknown){
-            let message: string = "Não foi possível listar as categorias";
-            if(error instanceof Error){
-                message = error.message;
-            }
-            res.status(400).json({
-                message: message
-            });
+export class CategoriaUsuarioController {
+    catUsuService = new CategoriaUsuarioService();
+
+
+    @Get()
+    async listarCategoria(
+        @Res() fail: TsoaResponse<400, BasicResponseDto>,
+        @Res() success: TsoaResponse<201, BasicResponseDto>
+    ): Promise<void> {
+        try {
+            const lista = await this.catUsuService.listarCategorias();
+            return success(201, new BasicResponseDto("Lista de Categorias de Usuário: ", lista));
+        } catch (err: any) {
+            return fail(400, new BasicResponseDto(err.message, undefined));
         }
     }
 }

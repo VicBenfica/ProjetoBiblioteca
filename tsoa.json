@@ -1,0 +1,27 @@
+{
+    "entryFile": "src/app.ts",
+    "noImplicitAdditionalProperties": "throw-on-extras",
+    "controllerPathGlobs": [
+        "src/controller/**/*.ts"
+    ],
+    "spec": {
+        "outputDirectory": "dist",
+        "specVersion": 3,
+        "spec": {
+            "info": {
+                "title": "Projeto 1 - Gestão de Biblioteca Acadêmica",
+                "version": "2.0.0",
+                "description": "Servidor de Desenvolvimento"
+            },
+            "servers": [
+                {
+                    "url": "http://localhost:3090/library",
+                    "description": "Servidor de Desenvolvimento"
+                }
+            ]
+        }
+    },
+    "routes": {
+        "routesDir": "src/route"
+    }
+}

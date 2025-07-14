@@ -1,55 +1,55 @@
+// src/controller/EmprestimoController.ts
+
+import { Body, Controller, Get, Path, Post, Put, Res, Route, Tags, TsoaResponse } from "tsoa";
 import { EmprestimoService } from "../service/EmprestimoService";
-import { Request, Response } from "express";
+import { BasicResponseDto } from "../model/dto/BasicResponseDto";
+import { Emprestimo } from "../model/dto/EmprestimoDto";
 
-export class EmprestimoController{
-    private emprestimoService = new EmprestimoService;
+@Route("emprestimos")
+@Tags("Emprestimos")
 
-    criarEmprestimo(req: Request, res: Response): void{
-        try{
-            const { cpfUsuario, codigoExemplar } = req.body;
+export class EmprestimoController extends Controller {
+    private emprestimoService = new EmprestimoService();
+
+    @Post()
+    public async criarEmprestimo(
+        @Body() dto: Emprestimo,
+        @Res() fail: TsoaResponse<400, BasicResponseDto>,
+        @Res() success: TsoaResponse<201, BasicResponseDto>
+    ): Promise<void> {
+        try {
+            const { cpfUsuario, codigoExemplar } = dto;
             const emprestimo = this.emprestimoService.registrarEmprestimo(cpfUsuario, codigoExemplar);
-            res.status(201).json(emprestimo);
-        }catch(error: unknown){
-            let message: string = "Não foi possível criar o registro";
-            if(error instanceof Error){
-                message = error.message;
-            }
-            res.status(400).json({
-                message: message
-            });
+            return success(201, new BasicResponseDto("Empréstimo realizado com sucesso", emprestimo));
+        } catch (error: any) {
+            return fail(400, new BasicResponseDto(error.message || "Erro ao registrar empréstimo", undefined));
         }
     }
 
-    listarEmprestimos(req: Request, res: Response): void{
-        try{
-            const emprestimo = this.emprestimoService.listarEmprestimos();
-            res.status(201).json(emprestimo);
-        }
-        catch(error: unknown){
-            let message: string = "Não foi possível listar empréstimos";
-            if(error instanceof Error){
-                message = error.message;
-            }
-            res.status(400).json({
-                message: message
-            });
+    @Get()
+    public async listarEmprestimos(
+        @Res() fail: TsoaResponse<400, BasicResponseDto>,
+        @Res() success: TsoaResponse<200, BasicResponseDto>
+    ): Promise<void> {
+        try {
+            const emprestimos = this.emprestimoService.listarEmprestimos();
+            return success(200, new BasicResponseDto("Lista de empréstimos", emprestimos));
+        } catch (error: any) {
+            return fail(400, new BasicResponseDto(error.message || "Erro ao listar empréstimos", undefined));
         }
     }
 
-    registrarDevolucao(req: Request, res: Response): void{
-        const id = parseInt(req.params.id);
-        try{
+    @Put("{id}/devolucao")
+    public async registrarDevolucao(
+        @Path() id: number,
+        @Res() fail: TsoaResponse<400, BasicResponseDto>,
+        @Res() success: TsoaResponse<200, BasicResponseDto>
+    ): Promise<void> {
+        try {
             const emprestimo = this.emprestimoService.registrarDevolucao(id);
-            res.status(201).json(emprestimo);
-        }
-        catch(error: unknown){
-            let message: string = "Não foi possível registrar devolucao";
-            if(error instanceof Error){
-                message = error.message;
-            }
-            res.status(400).json({
-                message: message
-            });
+            return success(200, new BasicResponseDto("Devolução registrada com sucesso", emprestimo));
+        } catch (error: any) {
+            return fail(400, new BasicResponseDto(error.message || "Erro ao registrar devolução", undefined));
         }
     }
 }

@@ -71,4 +71,19 @@ export class EstoqueService {
             disponiveis: exemplares.filter(e => e.status === "disponivel").length
         };
     }
+
+    public async removerExemplar(codigo: number): Promise<void> {
+        // Verifica se o exemplar existe
+        const exemplar = await this.estoqueRepository.buscarPorCodigo(codigo);
+        if (!exemplar) {
+            throw new Error("Exemplar não encontrado.");
+        }
+
+        if (exemplar.status === "emprestado") {
+            throw new Error("Exemplar não pode ser removido, pois está emprestado.");
+        }
+
+        await this.estoqueRepository.remover(codigo);
+    }
+
 }
