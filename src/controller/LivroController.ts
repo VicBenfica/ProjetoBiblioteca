@@ -6,84 +6,89 @@ export class LivroController{
 
     criarLivro(req: Request, res: Response): void{
         try{
-            const livro = this.livroService.AdicionarLivro(req.body);
+            const livro = this.livroService.novoLivro(req.body);
             res.status(201).json(livro);
-        }catch(error: unknown){
-            let message: string = "Não foi possível criar o registro";
+        } catch(error: unknown){
+            let message: string = "Não foi possivel criar Livro!"
             if(error instanceof Error){
-                message = error.message;
+                message = error.message
             }
             res.status(400).json({
                 message: message
-            });
+            })
         }
     }
 
-    listarLivro(req: Request, res: Response): void{
+    listarLivros(req: Request, res: Response): void{
         try{
-            const filtros = req.query;
-            const livro = this.livroService.listarLivroComFiltro(filtros);
-            res.status(201).json(livro);
-        }
-        catch(error: unknown){
-            let message: string = "Não foi possível listar os livros";
+            const lista = this.livroService.listarLivros();
+            res.status(200).json(lista);
+        } catch(error: unknown){
+           let message = "Não conseguimos realizar a listagem";
             if(error instanceof Error){
                 message = error.message;
             }
             res.status(400).json({
                 message: message
-            });
+            })
         }
     }
 
-    buscarLivro(req: Request, res: Response): void{
-        const isbn = req.params.isbn;
+    filtrarLivro(req: Request, res: Response): void{
         try{
-            const livro = this.livroService.buscarLivroPorISBN(isbn);
-            res.status(201).json(livro);
-        }
-        catch(error: unknown){
-            let message: string = "Não foi possível retornar o livro";
+            const livro = this.livroService.filtrarLivro({ isbn: Number(req.params.isbn) });
+            res.status(200).json(livro);
+        } catch(error: unknown){
+            let message = "Não existe esse livro em nosso cadastro, por favor cadastre esse livro";
             if(error instanceof Error){
                 message = error.message;
             }
             res.status(400).json({
                 message: message
-            });
+            })
         }
     }
 
     atualizarLivro(req: Request, res: Response): void{
-        const isbn = req.params.isbn;
         try{
-            const livro = this.livroService.atualizarLivro(isbn, req.body);
-            res.status(201).json(livro);
-        }
-        catch(error: unknown){
-            let message: string = "Não foi possível atualizar informações do livro";
+            const livroAtualizado = this.livroService.atualizaLivro({
+                isbn: Number(req.params.isbn),
+                novosDados: req.body
+            });
+
+            res.status(200).json(livroAtualizado);
+        } catch(error: unknown){
+            let message = "Não foi possivel realizar atualização";
             if(error instanceof Error){
                 message = error.message;
             }
             res.status(400).json({
                 message: message
-            });
+            })
         }
     }
 
     removerLivro(req: Request, res: Response): void{
-        const isbn = req.params.isbn;
         try{
-            const livro = this.livroService.removerLivro(isbn);
-            res.status(204).send();
-        }
-        catch(error: unknown){
-            let message: string = "Não foi possível remover livro";
+            const isbn = Number(req.params.isbn);
+            const livro = this.livroService.removeLivro(isbn);
+
+            res.status(200).json({
+                "status": "Livro Deletado com Sucesso!",
+                "livro": livro
+
+            })
+        } catch(error: unknown){
+            let message = "Não foi possivel realizar a remoção";
             if(error instanceof Error){
                 message = error.message;
             }
             res.status(400).json({
                 message: message
-            });
+            })
         }
     }
+
+
+
 }

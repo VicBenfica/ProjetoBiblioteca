@@ -2,99 +2,94 @@ import { EstoqueService } from "../service/EstoqueService";
 import { Request, Response } from "express";
 
 export class EstoqueController{
-    private estoqueService = new EstoqueService;
+    private estoqueService = new EstoqueService();
 
-    criarExemplar(req: Request, res: Response): void{
+    adicionarLivroNoEstoque(req: Request, res: Response): void{
         try{
-            const { codigo, livro_isbn } = req.body;
-            const estoque = this.estoqueService.cadastrarExemplar(codigo, livro_isbn);
-            res.status(201).json(estoque);
-        }catch(error: unknown){
-            let message: string = "Não foi possível criar o registro";
+            const livro = this.estoqueService.novoLivronoEstoque(req.body);
+            res.status(201).json({
+                "message": "Livro adicionado com Sucesso no seu Estoque! :)",
+                "livro": livro
+            })
+        } catch(error: unknown){
+            let message: string = "Não foi possivel adicionar o livro no estoque!"
+            if(error instanceof Error){
+                message = error.message
+            }
+            res.status(400).json({
+                message: message
+            })
+        }
+    }
+
+    listarEstoque(req: Request, res: Response): void{
+        try{
+            const lista = this.estoqueService.listarEstoque();
+            res.status(200).json(lista);
+        } catch(error: unknown){
+            let message = "Não conseguimos realizar a listagem do seu estoque";
             if(error instanceof Error){
                 message = error.message;
             }
             res.status(400).json({
                 message: message
-            });
+            })
         }
     }
 
-    listarDisponivel(req: Request, res: Response): void{
+    filtrarLivroNoEstoque(req: Request, res: Response): void{
         try{
-            const estoque = this.estoqueService.listarDisponiveis();
-            res.status(201).json(estoque);
-        }
-        catch(error: unknown){
-            let message: string = "Não foi possível listar o estoque disponível";
+            const livro = this.estoqueService.filtrarLivroNoEstoque({ cod: Number(req.params.cod) })
+            res.status(200).json(livro);
+        } catch(error: unknown){
+            let message = "Não existe esse exemplar em nosso cadastro, por favor cadastre esse exemplar";
             if(error instanceof Error){
                 message = error.message;
             }
             res.status(400).json({
                 message: message
-            });
+            })
         }
     }
 
-    buscarExemplar(req: Request, res: Response): void{
-        const codigo = parseInt(req.params.codigo);
+    atualizarDisponibildade(req: Request, res: Response): void{
         try{
-            const estoque = this.estoqueService.buscarExemplar(codigo);
-            res.status(201).json(estoque);
-        }
-        catch(error: unknown){
-            let message: string = "Não foi possível retornar o estoque";
+            const disponibilidadeAtualizada = this.estoqueService.atualizarDisponibilidade({
+                cod: Number(req.params.cod),
+                novaDisponibilidade: req.body
+            });
+
+            res.status(200).json(disponibilidadeAtualizada);
+        } catch(error: unknown){
+            let message = "Não foi possivel realizar atualização";
             if(error instanceof Error){
                 message = error.message;
             }
             res.status(400).json({
                 message: message
-            });
+            })
         }
     }
 
-    atualizarStatus(req: Request, res: Response): void{
-        const codigo = parseInt(req.params.codigo);
+    removerLivroNoEstoque(req: Request, res: Response): void{
         try{
-            const estoque = this.estoqueService.atualizarStatus(codigo, req.body);
-            res.status(201).json(estoque);
-        }
-        catch(error: unknown){
-            let message: string = "Não foi possível atualizar status do estoque";
+            const cod = Number(req.params.cod);
+            const livro = this.estoqueService.removerLivroNoEstoque(cod);
+
+            res.status(200).json({
+                "status": "Exemplar Deletado com sucesso em seu estoque!",
+                "usuario": livro
+
+            })
+        } catch(error: unknown){
+            let message = "Não foi possivel realizar a remoção";
             if(error instanceof Error){
                 message = error.message;
             }
             res.status(400).json({
                 message: message
-            });
+            })
         }
     }
 
-    resumoPorISBN(req: Request, res: Response): void {
-        try {
-            const { isbn } = req.params;
-            const resumo = this.estoqueService.getResumoEstoque(isbn);
-            res.status(200).json(resumo);
-        } 
-        catch (error: any){
-            res.status(404).json({ message: error.message });
-        }
-    }
-
-    RemoverEstoque(req: Request, res: Response): void{
-        const codigo = parseInt(req.params.codigo);
-        try{
-            const estoque = this.estoqueService.removerExemplar(codigo);
-            res.status(204).send();
-        }
-        catch(error: unknown){
-            let message: string = "Não foi possível remover estoque";
-            if(error instanceof Error){
-                message = error.message;
-            }
-            res.status(400).json({
-                message: message
-            });
-        }
-    }
 }

@@ -6,39 +6,75 @@ export class EmprestimoRepository {
 
     private constructor() {}
 
-    public static getInstance(): EmprestimoRepository {
-        if (!this.instance) {
-        this.instance = new EmprestimoRepository();
-    }
-    return this.instance;
+    public static getInstance(): EmprestimoRepository{
+        if(!this.instance){
+            this.instance = new EmprestimoRepository();
+        }
+
+        return this.instance;
     }
 
-    inserir(emprestimo: Emprestimo): void {
+    insereEmprestimo(emprestimo: Emprestimo){
         this.emprestimos.push(emprestimo);
     }
 
-    listarEmprestimos(): Emprestimo[] {
+    listarEmprestimos(){
         return this.emprestimos;
     }
 
-    buscarEmprestimoPorId(id: number): Emprestimo | undefined {
-        return this.emprestimos.find(e => e.id === id);
+    filtraEmprestimoPorID(id: number){
+        return this.emprestimos.find(emprestimo => emprestimo.id === id);
     }
 
-    registrarDevolucao(id: number, data: Date): boolean {
-        const emprestimo = this.buscarEmprestimoPorId(id);
-        if (emprestimo && !emprestimo.dataEntrega) {
-            emprestimo.dataEntrega = data;
-            return true;
-    }
-        return false;
+    filtraEmprestimosAtivosDoUsuario(usuario: number){
+        return this.emprestimos.filter(
+            emprestimo => emprestimo.usuario === usuario && emprestimo.status === 'ativo'
+        );
     }
 
-    listarPorUsuario(cpf: string): Emprestimo[] {
-        return this.emprestimos.filter(e => e.cpfUsuario === cpf);
+    filtraEmprestimosAtrasadosDoUsuario(cpf: number): Emprestimo[]{
+        return this.emprestimos.filter(
+            emprestimo => emprestimo.usuario === cpf && emprestimo.status === 'ativo' && emprestimo.estaAtrasado()
+        );
     }
 
-    emprestimosAbertos(cpf: string): Emprestimo[] {
-        return this.emprestimos.filter(e => e.cpfUsuario === cpf && !e.dataEntrega);
+    emprestimosAtivosDoUsuario(cpf: number): number {
+        return this.filtraEmprestimosAtivosDoUsuario(cpf).length;
+    }
+
+    verificarUsuarioSuspenso(cpf: number): boolean{
+        const emprestimosAtrasados = this.filtraEmprestimosAtrasadosDoUsuario(cpf);
+        return emprestimosAtrasados.some(emprestimo => emprestimo.calcularDiasAtraso() > 60);
+    }
+
+    atualizarStatusEmprestimo(id: number, novoStatus: 'ativo' | 'devolvido' | 'atrasado'): void{
+        const emprestimo = this.filtraEmprestimoPorID(id);
+
+        if(emprestimo){
+            emprestimo.status = novoStatus;
+
+            if(novoStatus === 'devolvido'){
+                emprestimo.finalizarEmprestimo();
+            }
+        }
+    }
+
+    verificarLimiteEmprestimo(cpf: number, categoria: 'professor' | 'aluno'): boolean{
+        const emprestimosAtivos = this.emprestimosAtivosDoUsuario(cpf);
+        let limiteEmprestimos = 0;
+
+        if(categoria === 'professor'){
+            limiteEmprestimos = 5;
+        } else {
+            limiteEmprestimos = 3;
+        }
+
+        return emprestimosAtivos < limiteEmprestimos;
+    }
+
+    listarEmprestimosAtivos(){
+        return this.emprestimos.filter(
+            emprestimo => emprestimo.status === 'ativo'
+        );
     }
 }

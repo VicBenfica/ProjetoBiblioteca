@@ -1,21 +1,23 @@
-export class Livro{
-    static proximoId: number = 0;
-
-    id: number;
-    isbn: string;
+export class Livro {
     titulo: string;
+    isbn: number;
     autor: string;
     editora: string;
     edicao: string;
-    categoriaId: number;
+    categoria: string;
+    status: 'disponivel' | 'não-disponivel';
 
-    constructor(isbn: string, titulo: string, autor: string, editora: string, edicao: string, categoriaId: number){
-        this.id = Livro.proximoId++;
-        this.isbn = isbn;
+    constructor(titulo: string, isbn: number, autor: string, editora: string, edicao: string, categoria: string) {
+        if (!titulo || !isbn || !autor || !editora || !edicao || !categoria) {
+            throw new Error("Por favor informar todos os campos");
+        }
+
         this.titulo = titulo;
+        this.isbn = isbn;
         this.autor = autor;
         this.editora = editora;
         this.edicao = edicao;
-        this.categoriaId = categoriaId;
+        this.categoria = categoria;
+        this.status = 'disponivel';
     }
 }

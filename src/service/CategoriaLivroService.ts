@@ -4,11 +4,9 @@ export class CategoriaLivroService{
     categoriaLivroRepository = CategoriaLivroRepository.getInstance();
 
     listarCategorias(){
-        return this.categoriaLivroRepository.listarCategorias();
+        return this.categoriaLivroRepository.listarCategoriasLivro();
     }
 
-    buscarPorId(id: number){
-        return this.categoriaLivroRepository.buscarPorId(id);
-    }
+   
     
 }
