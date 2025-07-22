@@ -25,7 +25,7 @@ let LivroController = class LivroController extends tsoa_1.Controller {
     async criarLivro(dto, fail, success) {
         try {
             dto.isbn = String(dto.isbn);
-            const livro = await this.livroService.adicionarLivro(dto);
+            const livro = await this.livroService.novoLivro(dto);
             return success(201, new BasicResponseDto_1.BasicResponseDto("Livro cadastrado com sucesso!", livro));
         }
         catch (err) {
@@ -34,7 +34,7 @@ let LivroController = class LivroController extends tsoa_1.Controller {
     }
     async listarLivros(fail, success) {
         try {
-            const livros = await this.livroService.listarLivroComFiltro({});
+            const livros = await this.livroService.listarLivros();
             return success(202, new BasicResponseDto_1.BasicResponseDto("Livros Cadastrados: ", livros));
         }
         catch (err) {
@@ -43,7 +43,7 @@ let LivroController = class LivroController extends tsoa_1.Controller {
     }
     async filtrarLivro(isbn, fail, success) {
         try {
-            const livroEncontrado = await this.livroService.buscarLivroPorISBN(isbn);
+            const livroEncontrado = await this.livroService.filtrarLivro({ isbn: String(isbn) });
             return success(200, new BasicResponseDto_1.BasicResponseDto("Livro encontrado com sucesso!", livroEncontrado));
         }
         catch (err) {
@@ -53,7 +53,10 @@ let LivroController = class LivroController extends tsoa_1.Controller {
     async atualizarLivro(isbn, dto, fail, success) {
         try {
             dto.isbn = String(dto.isbn);
-            const livroAtualizado = await this.livroService.atualizarLivro(isbn, dto);
+            const livroAtualizado = await this.livroService.atualizaLivro({
+                isbn: isbn,
+                novosDados: dto
+            });
             return success(200, new BasicResponseDto_1.BasicResponseDto("Livro atualizado com sucesso!", livroAtualizado));
         }
         catch (err) {
@@ -62,7 +65,7 @@ let LivroController = class LivroController extends tsoa_1.Controller {
     }
     async removerLivro(isbn, fail, success) {
         try {
-            const livroRemovido = await this.livroService.removerLivro(isbn);
+            const livroRemovido = await this.livroService.removeLivro(isbn);
             return success(200, new BasicResponseDto_1.BasicResponseDto("Livro Removido com sucesso!", livroRemovido));
         }
         catch (err) {
@@ -77,7 +80,7 @@ __decorate([
     __param(1, (0, tsoa_1.Res)()),
     __param(2, (0, tsoa_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [LivroDto_1.Livro, Function, Function]),
+    __metadata("design:paramtypes", [LivroDto_1.LivroDto, Function, Function]),
     __metadata("design:returntype", Promise)
 ], LivroController.prototype, "criarLivro", null);
 __decorate([
@@ -104,7 +107,7 @@ __decorate([
     __param(2, (0, tsoa_1.Res)()),
     __param(3, (0, tsoa_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, LivroDto_1.Livro, Function, Function]),
+    __metadata("design:paramtypes", [String, LivroDto_1.LivroDto, Function, Function]),
     __metadata("design:returntype", Promise)
 ], LivroController.prototype, "atualizarLivro", null);
 __decorate([

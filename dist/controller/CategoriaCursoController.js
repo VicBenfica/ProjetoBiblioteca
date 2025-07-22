@@ -12,19 +12,19 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CursoController = void 0;
+exports.CategoriaCursoController = void 0;
 const CategoriaCursoService_1 = require("../service/CategoriaCursoService");
 const tsoa_1 = require("tsoa");
 const BasicResponseDto_1 = require("../model/dto/BasicResponseDto");
 //importa a DTO que será usada para padronizar a API
-let CursoController = class CursoController {
+let CategoriaCursoController = class CategoriaCursoController extends tsoa_1.Controller {
     constructor() {
-        this.cursoService = new CategoriaCursoService_1.CursoService();
+        super(...arguments);
+        this.categoriaCursoService = new CategoriaCursoService_1.CategoriaCursoService();
     }
-    //endpoint do Tsoa, @Res é a resposta
     async listarCurso(fail, success) {
         try {
-            const lista = await this.cursoService.listarCursos();
+            const lista = await this.categoriaCursoService.listarCursos();
             return success(200, new BasicResponseDto_1.BasicResponseDto("Cursos Disponiveis: ", lista));
         }
         catch (err) {
@@ -32,21 +32,18 @@ let CursoController = class CursoController {
         }
     }
 };
-exports.CursoController = CursoController;
+exports.CategoriaCursoController = CategoriaCursoController;
 __decorate([
-    (0, tsoa_1.Get)()
-    //endpoint do Tsoa, @Res é a resposta
-    ,
+    (0, tsoa_1.Get)(),
     __param(0, (0, tsoa_1.Res)()),
     __param(1, (0, tsoa_1.Res)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Function, Function]),
     __metadata("design:returntype", Promise)
-], CursoController.prototype, "listarCurso", null);
-exports.CursoController = CursoController = __decorate([
+], CategoriaCursoController.prototype, "listarCurso", null);
+exports.CategoriaCursoController = CategoriaCursoController = __decorate([
     (0, tsoa_1.Route)("categoria-cursos")
     //Define as rotas
     ,
     (0, tsoa_1.Tags)("Cursos Disponiveis")
-    //importa os decorators do tsoa
-], CursoController);
+], CategoriaCursoController);

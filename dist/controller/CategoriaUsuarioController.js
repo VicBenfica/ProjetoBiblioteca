@@ -17,14 +17,14 @@ const CategoriaUsuarioService_1 = require("../service/CategoriaUsuarioService");
 const tsoa_1 = require("tsoa");
 const BasicResponseDto_1 = require("../model/dto/BasicResponseDto");
 //importa a DTO
-let CategoriaUsuarioController = class CategoriaUsuarioController {
+let CategoriaUsuarioController = class CategoriaUsuarioController extends tsoa_1.Controller {
     constructor() {
-        this.catUsuService = new CategoriaUsuarioService_1.CategoriaUsuarioService();
+        super(...arguments);
+        this.categoriaUsuarioService = new CategoriaUsuarioService_1.CategoriaUsuarioService();
     }
-    //endpoint
     async listarCategoria(fail, success) {
         try {
-            const lista = await this.catUsuService.listarCategorias();
+            const lista = await this.categoriaUsuarioService.listarCategorias();
             return success(201, new BasicResponseDto_1.BasicResponseDto("Lista de Categorias de Usuário: ", lista));
         }
         catch (err) {
@@ -42,8 +42,6 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], CategoriaUsuarioController.prototype, "listarCategoria", null);
 exports.CategoriaUsuarioController = CategoriaUsuarioController = __decorate([
-    (0, tsoa_1.Route)("categoria-usuario")
-    //define a rota
-    ,
+    (0, tsoa_1.Route)("categoria-usuario"),
     (0, tsoa_1.Tags)("Categoria de Usuário")
 ], CategoriaUsuarioController);

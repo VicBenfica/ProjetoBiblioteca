@@ -13,11 +13,6 @@ class CategoriaUsuarioRepository {
         }
         return this.instance;
     }
-    imprimeResult(err, result) {
-        if (result != undefined) {
-            console.log("Dentro callback", result);
-        }
-    }
     async criarTable() {
         const query = `CREATE TABLE IF NOT EXISTS biblioteca.CategoriaUsuario(
                 id INT AUTO_INCREMENT PRIMARY KEY, 
@@ -31,49 +26,39 @@ class CategoriaUsuarioRepository {
             console.error('Erro ao executar a query:', err);
         }
     }
-    async inserirCategoriasPadrao() {
-        const categorias = ["Professor", "Aluno", "Bibliotecário"];
-        await (0, mysql_1.executarComandoSQL)("CREATE TABLE IF NOT EXISTS biblioteca.CategoriaUsuario (id INT AUTO_INCREMENT PRIMARY KEY, nome VARCHAR(100) NOT NULL)", []);
+    static async inserirCategoriasPadrao() {
+        const categorias = ["Aluno", "Professor", "Bibliotecário"];
+        await (0, mysql_1.executarComandoSQL)("DROP TABLE IF EXISTS biblioteca.CategoriaUsuario", []);
+        await (0, mysql_1.executarComandoSQL)("CREATE TABLE IF NOT EXISTS biblioteca.CategoriaUsuario(id INT AUTO_INCREMENT PRIMARY KEY, nome VARCHAR(100) NOT NULL)", []);
         for (const nome of categorias) {
             try {
-                const resultado = await (0, mysql_1.executarComandoSQL)("INSERT IGNORE INTO biblioteca.CategoriaUsuario (nome) VALUES (?)", [nome]);
-                console.log('Categoria criada com sucesso:', resultado);
+                const resultado = await (0, mysql_1.executarComandoSQL)("INSERT INTO biblioteca.CategoriaUsuario (nome) VALUES (?)", [nome]);
+                console.log('Categoria criada com sucesso!', resultado);
             }
             catch (err) {
-                console.error('Erro ao criar categoria:', err);
+                console.error(`Erro ao inserir categoria ${nome}:`, err);
             }
         }
     }
-    async listarCategorias() {
+    async listarCategoria() {
+        const resultado = await (0, mysql_1.executarComandoSQL)("SELECT * FROM biblioteca.CategoriaUsuario", []);
         const categorias = [];
-        try {
-            const resultado = await (0, mysql_1.executarComandoSQL)("SELECT * FROM biblioteca.CategoriaUsuario", []);
+        if (resultado && resultado.length > 0) {
             for (let i = 0; i < resultado.length; i++) {
-                const dados = resultado[i];
-                const categoria = new CategoriaUsuario_1.CategoriaUsuario(dados.id, dados.nome);
-                categorias.push(categoria);
+                const row = resultado[i];
+                categorias.push(new CategoriaUsuario_1.CategoriaUsuario(row.id, row.nome));
             }
-            return categorias;
         }
-        catch (err) {
-            console.error('Erro ao listar categorias:', err);
-            return [];
-        }
+        return categorias;
     }
-    async buscarPorId(id) {
-        const query = `SELECT * FROM biblioteca.CategoriaLivro WHERE id = ?`;
-        try {
-            const resultado = await (0, mysql_1.executarComandoSQL)(query, [id]);
-            if (resultado && resultado.length > 0) {
-                const dados = resultado[0];
-                return new CategoriaUsuario_1.CategoriaUsuario(dados.id, dados.nome);
-            }
-            return null;
+    async encontrarCategoria(categoria) {
+        const query = `SELECT * FROM biblioteca.CategoriaUsuario WHERE nome = ?`;
+        const resultado = await (0, mysql_1.executarComandoSQL)(query, [categoria]);
+        if (resultado && resultado.length > 0) {
+            const row = resultado[0];
+            return new CategoriaUsuario_1.CategoriaUsuario(row.id, row.nome);
         }
-        catch (err) {
-            console.error("Erro ao buscar categoria por ID:", err);
-            return null;
-        }
+        return null;
     }
 }
 exports.CategoriaUsuarioRepository = CategoriaUsuarioRepository;

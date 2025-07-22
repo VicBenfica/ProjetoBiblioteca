@@ -3,96 +3,125 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmprestimoService = void 0;
 const EmprestimoEntity_1 = require("../model/entity/EmprestimoEntity");
 const EmprestimoRepository_1 = require("../repository/EmprestimoRepository");
-const UsuarioRepository_1 = require("../repository/UsuarioRepository");
 const EstoqueRepository_1 = require("../repository/EstoqueRepository");
-const CategoriaUsuarioRepository_1 = require("../repository/CategoriaUsuarioRepository");
+const UsuarioRepository_1 = require("../repository/UsuarioRepository");
 const LivroRepository_1 = require("../repository/LivroRepository");
-const UsuarioService_1 = require("./UsuarioService");
-const EstoqueService_1 = require("./EstoqueService");
+const CategoriaUsuarioRepository_1 = require("../repository/CategoriaUsuarioRepository");
 class EmprestimoService {
     constructor() {
-        this.emprestimoRepository = EmprestimoRepository_1.EmprestimoRepository.getInstance();
+        this.emprestimoRespository = EmprestimoRepository_1.EmprestimoRepository.getInstance();
         this.usuarioRepository = UsuarioRepository_1.UsuarioRepository.getInstance();
         this.estoqueRepository = EstoqueRepository_1.EstoqueRepository.getInstance();
-        this.catUsuRepository = CategoriaUsuarioRepository_1.CategoriaUsuarioRepository.getInstance();
         this.livroRepository = LivroRepository_1.LivroRepository.getInstance();
-        this.usuarioService = new UsuarioService_1.UsuarioService();
-        this.estoqueService = new EstoqueService_1.EstoqueService();
+        this.categoriaUsuarioRepository = CategoriaUsuarioRepository_1.CategoriaUsuarioRepository.getInstance();
     }
-    async registrarEmprestimo(cpfUsuario, codigoExemplar) {
-        const usuario = await this.usuarioRepository.buscarUsuarioPorCPF(cpfUsuario);
+    async novoEmprestimo(data) {
+        const categoria = data.categoria.toLowerCase();
+        if (categoria !== 'aluno' && categoria !== 'professor') {
+            throw new Error("Categoria inválida. Use 'aluno' ou 'professor'.");
+        }
+        const usuario = await this.usuarioRepository.filtraUsuarioPorCPF(data.usuario);
         if (!usuario) {
             throw new Error("Usuário não encontrado!");
         }
-        await this.usuarioService.verificarInativacaoUsuario(cpfUsuario); // supondo que esse método seja async
-        if (usuario.status !== "ativo") {
-            throw new Error("Usuário não está apto para empréstimo.");
+        usuario.atualizarStatusPorAtraso(usuario.diasAtraso || 0);
+        usuario.atualizarLivrosAtrasados(usuario.livrosAtrasados || 0);
+        if (usuario.status != 'ativo') {
+            throw new Error("Usuário não está ativo para realizar empréstimos!");
         }
-        if (usuario.diaSuspensao && usuario.diaSuspensao > 0) {
-            throw new Error("Usuário suspenso.");
+        if (await this.emprestimoRespository.verificarUsuarioSuspenso(data.usuario)) {
+            await this.usuarioRepository.atualizarUsuarioPorCPF(data.usuario, { status: 'suspenso' });
+            throw new Error("Usuário possui empréstimos em atraso!");
         }
-        const exemplar = await this.estoqueRepository.buscarPorCodigo(codigoExemplar);
-        if (!exemplar || exemplar.status !== "disponivel") {
-            throw new Error("Exemplar não disponível.");
+        const estoque = await this.estoqueRepository.filtraLivroNoEstoque(data.codExemplar);
+        if (!estoque) {
+            throw new Error("Exemplar não encontrado!");
         }
-        const categoria = await this.catUsuRepository.buscarPorId(usuario.categoriaId);
-        if (!categoria) {
-            throw new Error("Categoria do usuário inválida.");
+        if (estoque.disponibilidade === 'emprestado') {
+            throw new Error("Este exemplar não está disponível para empréstimo!");
         }
-        const livro = await this.livroRepository.buscarLivroPorISBN(exemplar.livro_isbn);
-        if (!livro) {
-            throw new Error("Livro associado ao exemplar não encontrado.");
+        if (!(await this.emprestimoRespository.verificarLimiteEmprestimo(data.usuario, data.categoria))) {
+            let limite = data.categoria === 'professor' ? 5 : 3;
+            throw new Error(`Usuário já atingiu o limite máximo de ${limite} empréstimos simultâneos!`);
         }
-        const emprestimosAtivos = await this.emprestimoRepository.emprestimosAbertos(cpfUsuario);
-        const limiteQtd = categoria.nome === "Professor" ? 5 : 3;
-        const limiteDias = categoria.nome === "Aluno" && livro.categoriaId === usuario.cursoId
-            ? 30
-            : categoria.nome === "Aluno"
-                ? 15
-                : 40;
-        if (emprestimosAtivos.length >= limiteQtd) {
-            throw new Error("Usuário atingiu o limite de empréstimos!");
+        if (!(await this.categoriaUsuarioRepository.encontrarCategoria(data.categoria))) {
+            throw new Error("Por favor informar uma categoria existente");
         }
-        const dataEmprestimo = new Date();
-        const dataDevolucao = new Date();
-        dataDevolucao.setDate(dataEmprestimo.getDate() + limiteDias);
-        const novoEmprestimo = new EmprestimoEntity_1.EmprestimoEntity(cpfUsuario, codigoExemplar);
-        novoEmprestimo.dataEmprestimo = dataEmprestimo;
-        novoEmprestimo.dataDevolucao = dataDevolucao;
-        await this.estoqueService.marcarComoEmprestado(codigoExemplar);
-        await this.emprestimoRepository.inserir(novoEmprestimo);
-        return novoEmprestimo;
-    }
-    listarEmprestimos() {
-        return this.emprestimoRepository.listarEmprestimos();
-    }
-    registrarDevolucao(id) {
-        const emprestimo = this.emprestimoRepository.buscarEmprestimoPorId(id);
-        if (emprestimo === undefined || emprestimo.dataEntrega) {
-            throw new Error("Empréstimo não encontrado ou já devolvido.");
+        if (!estoque) {
+            throw new Error("Exemplar não encontrado!");
         }
-        const dataEntrega = new Date();
-        emprestimo.dataEntrega = dataEntrega;
-        let atraso = 0;
-        if (!emprestimo.dataDevolucao) {
-            throw new Error("Data de devolução não está definida.");
+        if (estoque.quantidade_emprestada >= estoque.quantidade) {
+            throw new Error("Todos os exemplares estão emprestados!");
         }
-        if (dataEntrega > emprestimo.dataDevolucao) {
-            const diferencaMs = dataEntrega.getTime() - emprestimo.dataDevolucao.getTime();
-            atraso = Math.ceil(diferencaMs / (1000 * 60 * 60 * 24));
+        estoque.quantidade_emprestada = Number(estoque.quantidade_emprestada) || 0;
+        estoque.quantidade_emprestada += 1;
+        if (estoque.quantidade_emprestada >= estoque.quantidade) {
+            estoque.disponibilidade = 'emprestado';
+            await this.estoqueRepository.atualizarDisponibilidade(estoque.id, {
+                disponibilidade: estoque.disponibilidade,
+                quantidade_emprestada: estoque.quantidade_emprestada
+            });
+            await this.livroRepository.atualizarLivroPorISBN(estoque.isbn, { status: 'não-disponivel' });
         }
         else {
-            atraso = 0;
+            await this.estoqueRepository.atualizarDisponibilidade(estoque.id, {
+                quantidade_emprestada: estoque.quantidade_emprestada
+            });
         }
-        emprestimo.diasAtraso = atraso;
-        if (atraso > 0) {
-            this.usuarioService.aplicarSuspensao(emprestimo.cpfUsuario, atraso);
-        }
-        const exemplar = this.estoqueRepository.buscarPorCodigo(emprestimo.codigoExemplar);
-        if (exemplar) {
-            this.estoqueService.marcarComoDisponivel(emprestimo.codigoExemplar);
+        const emprestimo = new EmprestimoEntity_1.EmprestimoEntity(undefined, data.usuario, estoque.id, data.categoria);
+        return await this.emprestimoRespository.insereEmprestimo(emprestimo);
+    }
+    async listarEmprestimos() {
+        return await this.emprestimoRespository.listarEmprestimos();
+    }
+    async listarEmprestimosAtivos() {
+        return await this.emprestimoRespository.listarEmprestimosAtivos();
+    }
+    filtrarEmprestimoPorID(data) {
+        const id = data.id;
+        const emprestimo = this.emprestimoRespository.filtraEmprestimoPorID(id);
+        if (emprestimo === null) {
+            throw new Error("Emprestimo não encontrado");
         }
         return emprestimo;
+    }
+    async registrarDevolucao(data) {
+        const id = data.id;
+        const novoStatus = 'devolvido';
+        const emprestimo = await this.emprestimoRespository.filtraEmprestimoPorID(id);
+        if (!emprestimo) {
+            throw new Error("Empréstimo não encontrado!");
+        }
+        const usuario = await this.usuarioRepository.filtraUsuarioPorCPF(emprestimo.usuario);
+        if (!usuario) {
+            throw new Error("Usuário não encontrado!");
+        }
+        await this.emprestimoRespository.atualizarStatusEmprestimo(id, novoStatus);
+        usuario.atualizarLivrosAtrasados(Math.max(0, usuario.livrosAtrasados - 1));
+        if (usuario.livrosAtrasados <= 2 && usuario.diasSuspensao <= 60) {
+            usuario.status = "ativo";
+        }
+        await this.usuarioRepository.atualizarUsuarioPorCPF(usuario.cpf, usuario.status);
+        const estoque = await this.estoqueRepository.filtraLivroNoEstoque(Number(emprestimo.codExemplar));
+        if (!estoque) {
+            throw new Error("Não há nenhum livro do seu estoque com este emprestimo, por favor cadastre um livro ou realize um emprestimo.");
+        }
+        if (estoque) {
+            estoque.quantidade_emprestada = Number(estoque.quantidade_emprestada) || 0;
+            if (estoque.quantidade_emprestada > 0) {
+                estoque.quantidade_emprestada -= 1;
+                if (estoque.quantidade_emprestada < 0)
+                    estoque.quantidade_emprestada = 0;
+            }
+            let dadosAtualizar = { quantidade_emprestada: estoque.quantidade_emprestada };
+            if (estoque.quantidade_emprestada < estoque.quantidade) {
+                estoque.disponibilidade = 'disponivel';
+                dadosAtualizar.disponibilidade = estoque.disponibilidade;
+                await this.livroRepository.atualizarLivroPorISBN(estoque.isbn, { status: 'disponivel' });
+            }
+            await this.estoqueRepository.atualizarDisponibilidade(estoque.id, dadosAtualizar);
+        }
+        return await this.emprestimoRespository.filtraEmprestimoPorID(id);
     }
 }
 exports.EmprestimoService = EmprestimoService;

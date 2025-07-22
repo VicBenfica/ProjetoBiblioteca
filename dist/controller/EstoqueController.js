@@ -16,7 +16,7 @@ exports.EstoqueController = void 0;
 const EstoqueService_1 = require("../service/EstoqueService");
 const tsoa_1 = require("tsoa");
 const BasicResponseDto_1 = require("../model/dto/BasicResponseDto");
-const LivroDto_1 = require("../model/dto/LivroDto");
+const EstoqueDto_1 = require("../model/dto/EstoqueDto");
 let EstoqueController = class EstoqueController extends tsoa_1.Controller {
     constructor() {
         super(...arguments);
@@ -24,8 +24,8 @@ let EstoqueController = class EstoqueController extends tsoa_1.Controller {
     }
     async adicionarLivroNoEstoque(dto, fail, success) {
         try {
-            const livro = await this.estoqueService.cadastrarExemplar(dto.id, dto.isbn);
-            return success(200, new BasicResponseDto_1.BasicResponseDto("Livro adicionado com sucesso!", livro));
+            const livro = await this.estoqueService.novoLivronoEstoque(dto);
+            return success(200, new BasicResponseDto_1.BasicResponseDto("Livro adicionado com sucesso no seu estoque!", livro));
         }
         catch (err) {
             return fail(400, new BasicResponseDto_1.BasicResponseDto(err.message, undefined));
@@ -33,7 +33,7 @@ let EstoqueController = class EstoqueController extends tsoa_1.Controller {
     }
     async listarEstoque(fail, success) {
         try {
-            const lista = await this.estoqueService.listarDisponiveis();
+            const lista = await this.estoqueService.listarEstoque();
             return success(202, new BasicResponseDto_1.BasicResponseDto("Lista do seu estoque: ", lista));
         }
         catch (err) {
@@ -42,23 +42,23 @@ let EstoqueController = class EstoqueController extends tsoa_1.Controller {
     }
     async filtrarLivroNoEstoque(id, fail, success) {
         try {
-            const resultado = await this.estoqueService.buscarExemplar(Number(id));
+            const resultado = await this.estoqueService.filtrarLivroNoEstoque({ id: Number(id) });
             return success(200, new BasicResponseDto_1.BasicResponseDto("Livro no estoque foi encontrado com sucesso!", resultado));
         }
         catch (err) {
             return fail(400, new BasicResponseDto_1.BasicResponseDto(err.message, undefined));
         }
     }
-    async atualizarDisponibilidade(id, dto, fail, success) {
+    async atualizarDisponibildade(id, dto, fail, success) {
         try {
-            if (!dto.status) {
-                return fail(400, new BasicResponseDto_1.BasicResponseDto("Campo 'status' é obrigatório.", undefined));
+            const disponibilidadeAtualizada = await this.estoqueService.atualizarDisponibilidade({
+                id: id,
+                novaDisponibilidade: dto.disponibilidade
+            });
+            if (!dto.disponibilidade) {
+                return fail(400, new BasicResponseDto_1.BasicResponseDto("Campo 'disponibilidade' é obrigatório.", undefined));
             }
-            const disponibilidadeAtualizada = this.estoqueService.atualizarStatus(id, dto.status);
-            if (!disponibilidadeAtualizada) {
-                return fail(400, new BasicResponseDto_1.BasicResponseDto("Não foi possível atualizar o status, exemplar não encontrado.", undefined));
-            }
-            return success(200, new BasicResponseDto_1.BasicResponseDto("Disponibilidade atualizada com sucesso!", disponibilidadeAtualizada));
+            return success(200, new BasicResponseDto_1.BasicResponseDto("Disponibilidade atualizado com sucesso!", disponibilidadeAtualizada));
         }
         catch (err) {
             return fail(400, new BasicResponseDto_1.BasicResponseDto(err.message, undefined));
@@ -66,7 +66,7 @@ let EstoqueController = class EstoqueController extends tsoa_1.Controller {
     }
     async removerLivroNoEstoque(id, fail, success) {
         try {
-            const livroRemovido = await this.estoqueService.removerExemplar(id);
+            const livroRemovido = await this.estoqueService.removerLivroNoEstoque(id);
             return success(200, new BasicResponseDto_1.BasicResponseDto("Exemplar Deletado com sucesso em seu estoque!", livroRemovido));
         }
         catch (err) {
@@ -81,7 +81,7 @@ __decorate([
     __param(1, (0, tsoa_1.Res)()),
     __param(2, (0, tsoa_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [LivroDto_1.Livro, Function, Function]),
+    __metadata("design:paramtypes", [EstoqueDto_1.EstoqueDto, Function, Function]),
     __metadata("design:returntype", Promise)
 ], EstoqueController.prototype, "adicionarLivroNoEstoque", null);
 __decorate([
@@ -110,7 +110,7 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Number, Object, Function, Function]),
     __metadata("design:returntype", Promise)
-], EstoqueController.prototype, "atualizarDisponibilidade", null);
+], EstoqueController.prototype, "atualizarDisponibildade", null);
 __decorate([
     (0, tsoa_1.Delete)("{id}"),
     __param(0, (0, tsoa_1.Path)()),

@@ -17,13 +17,14 @@ const CategoriaLivroService_1 = require("../service/CategoriaLivroService");
 const tsoa_1 = require("tsoa");
 const BasicResponseDto_1 = require("../model/dto/BasicResponseDto");
 //importação para o DTO
-let CategoriaLivroController = class CategoriaLivroController {
+let CategoriaLivroController = class CategoriaLivroController extends tsoa_1.Controller {
     constructor() {
+        super(...arguments);
         this.categoriaLivroService = new CategoriaLivroService_1.CategoriaLivroService();
     }
     async listarCategoriaLivro(fail, success) {
         try {
-            const lista = await this.categoriaLivroService.listarCategorias();
+            const lista = await this.categoriaLivroService.listarCategoriaLivro();
             return success(200, new BasicResponseDto_1.BasicResponseDto("Categorias de Livro Disponiveis", lista));
         }
         catch (err) {
@@ -41,8 +42,6 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], CategoriaLivroController.prototype, "listarCategoriaLivro", null);
 exports.CategoriaLivroController = CategoriaLivroController = __decorate([
-    (0, tsoa_1.Route)("categoria-livros")
-    //Define as rotas
-    ,
+    (0, tsoa_1.Route)("categoria-livros"),
     (0, tsoa_1.Tags)("Categoria de Livro")
 ], CategoriaLivroController);

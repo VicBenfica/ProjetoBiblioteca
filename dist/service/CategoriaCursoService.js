@@ -1,16 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CursoService = void 0;
+exports.CategoriaCursoService = void 0;
 const CategoriaCursoRepository_1 = require("../repository/CategoriaCursoRepository");
-class CursoService {
+class CategoriaCursoService {
     constructor() {
-        this.cursoRepository = CategoriaCursoRepository_1.CategoriaCursoRepository.getInstance();
+        this.categoriaCursoRepository = CategoriaCursoRepository_1.CategoriaCursoRepository.getInstance();
     }
-    listarCursos() {
-        return this.cursoRepository.listarCategorias();
-    }
-    buscarPorId(id) {
-        return this.cursoRepository.buscarPorId(id);
+    async listarCursos() {
+        return await this.categoriaCursoRepository.listarCategorias();
     }
 }
-exports.CursoService = CursoService;
+exports.CategoriaCursoService = CategoriaCursoService;

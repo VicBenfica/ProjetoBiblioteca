@@ -5,7 +5,7 @@ const CategoriaLivro_1 = require("../model/entity/CategoriaLivro");
 const mysql_1 = require("../database/mysql");
 class CategoriaLivroRepository {
     constructor() {
-        this.criarTable();
+        this.createTable();
     }
     static getInstance() {
         if (!this.instance) {
@@ -13,67 +13,51 @@ class CategoriaLivroRepository {
         }
         return this.instance;
     }
-    imprimeResult(err, result) {
-        if (result != undefined) {
-            console.log("Dentro callback", result);
-        }
-    }
-    async criarTable() {
+    async createTable() {
         const query = `CREATE TABLE IF NOT EXISTS biblioteca.CategoriaLivro(
-            id INT AUTO_INCREMENT PRIMARY KEY, 
-            nome VARCHAR(100) NOT NULL
-            )`;
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                nome VARCHAR(100) NOT NULL
+                )`;
         try {
             const resultado = await (0, mysql_1.executarComandoSQL)(query, []);
-            console.log('Tabela de categoria de livros criada!', resultado);
+            console.log('Tabela de categoria de livros foi criada com sucesso!', resultado);
         }
         catch (err) {
-            console.error('Erro ao executar a query:', err);
+            console.error('Erro ao executar a query de estoque: ', err);
         }
     }
-    async inserirCategoriasPadrao() {
+    static async inserirCategoriasPadrao() {
         const categorias = ["Romance", "Computação", "Letras", "Gestão"];
-        await (0, mysql_1.executarComandoSQL)("CREATE TABLE IF NOT EXISTS biblioteca.CategoriaLivro (id INT AUTO_INCREMENT PRIMARY KEY, nome VARCHAR(100) NOT NULL)", []);
+        await (0, mysql_1.executarComandoSQL)("CREATE TABLE IF NOT EXISTS biblioteca.CategoriaLivro(id INT AUTO_INCREMENT PRIMARY KEY, nome VARCHAR(100) NOT NULL)", []);
         for (const nome of categorias) {
             try {
-                const resultado = await (0, mysql_1.executarComandoSQL)("INSERT IGNORE INTO biblioteca.CategoriaLivro (nome) VALUES (?)", [nome]);
-                console.log('Categoria criada com sucesso:', resultado);
+                const resultado = await (0, mysql_1.executarComandoSQL)("INSERT IGNORE INTO biblioteca.CategoriaLivro (nome) values (?)", [nome]);
+                console.log('Categoria criada com sucesso!', resultado);
             }
             catch (err) {
-                console.error('Erro ao criar categoria:', err);
+                console.error(`Erro ao inserir categoria ${nome}:`, err);
             }
         }
     }
-    async listarCategorias() {
+    async listarCategoriasLivro() {
+        const resultado = await (0, mysql_1.executarComandoSQL)("SELECT * FROM biblioteca.CategoriaLivro", []);
         const categorias = [];
-        try {
-            const resultado = await (0, mysql_1.executarComandoSQL)("SELECT * FROM biblioteca.CategoriaLivro", []);
+        if (resultado && resultado.length > 0) {
             for (let i = 0; i < resultado.length; i++) {
-                const dados = resultado[i];
-                const categoria = new CategoriaLivro_1.CategoriaLivro(dados.id, dados.nome);
-                categorias.push(categoria);
+                const row = resultado[i];
+                categorias.push(new CategoriaLivro_1.CategoriaLivro(row.id, row.nome));
             }
-            return categorias;
         }
-        catch (err) {
-            console.error('Erro ao listar categorias:', err);
-            return [];
-        }
+        return categorias;
     }
-    async buscarPorId(id) {
-        const query = `SELECT * FROM biblioteca.CategoriaLivro WHERE id = ?`;
-        try {
-            const resultado = await (0, mysql_1.executarComandoSQL)(query, [id]);
-            if (resultado && resultado.length > 0) {
-                const dados = resultado[0];
-                return new CategoriaLivro_1.CategoriaLivro(dados.id, dados.nome);
-            }
-            return null;
+    async encontrarCategoria(livro) {
+        const query = `SELECT * FROM biblioteca.CategoriaLivro WHERE nome = ?`;
+        const resultado = await (0, mysql_1.executarComandoSQL)(query, [livro]);
+        if (resultado && resultado.length > 0) {
+            const row = resultado[0];
+            return new CategoriaLivro_1.CategoriaLivro(row.id, row.nome);
         }
-        catch (err) {
-            console.error("Erro ao buscar categoria por ID:", err);
-            return null;
-        }
+        return null;
     }
 }
 exports.CategoriaLivroRepository = CategoriaLivroRepository;

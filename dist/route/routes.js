@@ -2,21 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RegisterRoutes = RegisterRoutes;
 const runtime_1 = require("@tsoa/runtime");
-// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 const UsuarioController_1 = require("./../controller/UsuarioController");
-// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 const LivroController_1 = require("./../controller/LivroController");
-// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 const EstoqueController_1 = require("./../controller/EstoqueController");
-// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 const EmprestimoController_1 = require("./../controller/EmprestimoController");
-// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 const CategoriaUsuarioController_1 = require("./../controller/CategoriaUsuarioController");
-// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 const CategoriaLivroController_1 = require("./../controller/CategoriaLivroController");
-// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 const CategoriaCursoController_1 = require("./../controller/CategoriaCursoController");
-// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 const models = {
     "Usuario": {
         "dataType": "refObject",
@@ -415,7 +407,7 @@ function RegisterRoutes(app) {
         fail: { "in": "res", "name": "400", "required": true, "ref": "BasicResponseDto" },
         success: { "in": "res", "name": "200", "required": true, "ref": "BasicResponseDto" },
     };
-    app.put('/estoque/:id', ...((0, runtime_1.fetchMiddlewares)(EstoqueController_1.EstoqueController)), ...((0, runtime_1.fetchMiddlewares)(EstoqueController_1.EstoqueController.prototype.atualizarDisponibilidade)), async function EstoqueController_atualizarDisponibilidade(request, response, next) {
+    app.put('/estoque/:id', ...((0, runtime_1.fetchMiddlewares)(EstoqueController_1.EstoqueController)), ...((0, runtime_1.fetchMiddlewares)(EstoqueController_1.EstoqueController.prototype.atualizarDisponibildade)), async function EstoqueController_atualizarDisponibilidade(request, response, next) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         let validatedArgs = [];
         try {
@@ -586,12 +578,11 @@ function RegisterRoutes(app) {
         fail: { "in": "res", "name": "400", "required": true, "ref": "BasicResponseDto" },
         success: { "in": "res", "name": "200", "required": true, "ref": "BasicResponseDto" },
     };
-    app.get('/categoria-cursos', ...((0, runtime_1.fetchMiddlewares)(CategoriaCursoController_1.CursoController)), ...((0, runtime_1.fetchMiddlewares)(CategoriaCursoController_1.CursoController.prototype.listarCurso)), async function CursoController_listarCurso(request, response, next) {
-        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    app.get('/categoria-cursos', ...((0, runtime_1.fetchMiddlewares)(CategoriaCursoController_1.CategoriaCursoController)), ...((0, runtime_1.fetchMiddlewares)(CategoriaCursoController_1.CategoriaCursoController.prototype.listarCurso)), async function CursoController_listarCurso(request, response, next) {
         let validatedArgs = [];
         try {
             validatedArgs = templateService.getValidatedArgs({ args: argsCursoController_listarCurso, request, response });
-            const controller = new CategoriaCursoController_1.CursoController();
+            const controller = new CategoriaCursoController_1.CategoriaCursoController();
             await templateService.apiHandler({
                 methodName: 'listarCurso',
                 controller,

@@ -1,5 +1,4 @@
 "use strict";
-// src/controller/EmprestimoController.ts
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -17,40 +16,55 @@ exports.EmprestimoController = void 0;
 const tsoa_1 = require("tsoa");
 const EmprestimoService_1 = require("../service/EmprestimoService");
 const BasicResponseDto_1 = require("../model/dto/BasicResponseDto");
-const EmprestimoDto_1 = require("../model/dto/EmprestimoDto");
-//importa a Dto
 let EmprestimoController = class EmprestimoController extends tsoa_1.Controller {
     constructor() {
         super(...arguments);
         this.emprestimoService = new EmprestimoService_1.EmprestimoService();
     }
-    //ENDPOINTS
     async criarEmprestimo(dto, fail, success) {
         try {
-            const { cpfUsuario, codigoExemplar } = dto;
-            const emprestimo = this.emprestimoService.registrarEmprestimo(cpfUsuario, codigoExemplar);
-            return success(201, new BasicResponseDto_1.BasicResponseDto("Empréstimo realizado com sucesso", emprestimo));
+            const emprestimo = await this.emprestimoService.novoEmprestimo(dto);
+            return success(201, new BasicResponseDto_1.BasicResponseDto("Emprestimo realizado com sucesso!", emprestimo));
         }
-        catch (error) {
-            return fail(400, new BasicResponseDto_1.BasicResponseDto(error.message || "Erro ao registrar empréstimo", undefined));
+        catch (err) {
+            return fail(400, new BasicResponseDto_1.BasicResponseDto(err.message, undefined));
         }
     }
     async listarEmprestimos(fail, success) {
         try {
-            const emprestimos = this.emprestimoService.listarEmprestimos();
-            return success(200, new BasicResponseDto_1.BasicResponseDto("Lista de empréstimos", emprestimos));
+            const lista = await this.emprestimoService.listarEmprestimos();
+            const ativos = await this.emprestimoService.listarEmprestimosAtivos();
+            const resultado = ({
+                "message": "Emprestimos Ativos",
+                "emprestimos": ativos,
+                "historico": "Histórico de Emprestimo",
+                "lista": lista
+            });
+            return success(202, new BasicResponseDto_1.BasicResponseDto("Resposta: ", resultado));
         }
-        catch (error) {
-            return fail(400, new BasicResponseDto_1.BasicResponseDto(error.message || "Erro ao listar empréstimos", undefined));
+        catch (err) {
+            return fail(400, new BasicResponseDto_1.BasicResponseDto(err.message, undefined));
+        }
+    }
+    async filtraEmprestimoPorID(id, fail, success) {
+        try {
+            const emprestimoEncontrado = await this.emprestimoService.filtrarEmprestimoPorID({ id: Number(id) });
+            return success(200, new BasicResponseDto_1.BasicResponseDto("Emprestimo encontrado com sucesso!", emprestimoEncontrado));
+        }
+        catch (err) {
+            return fail(400, new BasicResponseDto_1.BasicResponseDto(err.message, undefined));
         }
     }
     async registrarDevolucao(id, fail, success) {
         try {
-            const emprestimo = this.emprestimoService.registrarDevolucao(id);
-            return success(200, new BasicResponseDto_1.BasicResponseDto("Devolução registrada com sucesso", emprestimo));
+            const devolucao = await this.emprestimoService.registrarDevolucao({
+                id: id,
+                novoStatus: "devolvido"
+            });
+            return success(200, new BasicResponseDto_1.BasicResponseDto("Devolução registrada com sucesso!", devolucao));
         }
-        catch (error) {
-            return fail(400, new BasicResponseDto_1.BasicResponseDto(error.message || "Erro ao registrar devolução", undefined));
+        catch (err) {
+            return fail(400, new BasicResponseDto_1.BasicResponseDto(err.message, undefined));
         }
     }
 };
@@ -61,7 +75,7 @@ __decorate([
     __param(1, (0, tsoa_1.Res)()),
     __param(2, (0, tsoa_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [EmprestimoDto_1.Emprestimo, Function, Function]),
+    __metadata("design:paramtypes", [Object, Function, Function]),
     __metadata("design:returntype", Promise)
 ], EmprestimoController.prototype, "criarEmprestimo", null);
 __decorate([
@@ -73,7 +87,16 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], EmprestimoController.prototype, "listarEmprestimos", null);
 __decorate([
-    (0, tsoa_1.Put)("{id}/devolucao"),
+    (0, tsoa_1.Get)("{id}"),
+    __param(0, (0, tsoa_1.Path)()),
+    __param(1, (0, tsoa_1.Res)()),
+    __param(2, (0, tsoa_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Function, Function]),
+    __metadata("design:returntype", Promise)
+], EmprestimoController.prototype, "filtraEmprestimoPorID", null);
+__decorate([
+    (0, tsoa_1.Put)("{id}"),
     __param(0, (0, tsoa_1.Path)()),
     __param(1, (0, tsoa_1.Res)()),
     __param(2, (0, tsoa_1.Res)()),
@@ -82,8 +105,6 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], EmprestimoController.prototype, "registrarDevolucao", null);
 exports.EmprestimoController = EmprestimoController = __decorate([
-    (0, tsoa_1.Route)("emprestimos")
-    //DEFINE AS ROTAS
-    ,
-    (0, tsoa_1.Tags)("Emprestimos")
+    (0, tsoa_1.Route)("emprestimo"),
+    (0, tsoa_1.Tags)("Emprestimo")
 ], EmprestimoController);

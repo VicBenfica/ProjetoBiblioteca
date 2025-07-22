@@ -15,10 +15,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsuarioController = void 0;
 const UsuarioService_1 = require("../service/UsuarioService");
 const tsoa_1 = require("tsoa");
-//importação dos decorators do tsoa
 const UsuarioDto_1 = require("../model/dto/UsuarioDto");
 const BasicResponseDto_1 = require("../model/dto/BasicResponseDto");
-// importação dos Dto
 let UsuarioController = class UsuarioController extends tsoa_1.Controller {
     constructor() {
         super(...arguments);
@@ -26,47 +24,46 @@ let UsuarioController = class UsuarioController extends tsoa_1.Controller {
     }
     async criarUsuario(dto, fail, success) {
         try {
-            const usuario = await this.usuarioService.cadastrarUsuario(dto);
+            const usuario = await this.usuarioService.novoUsuario(dto);
             return success(201, new BasicResponseDto_1.BasicResponseDto("Usuario criado com sucesso", usuario));
         }
         catch (err) {
             return fail(400, new BasicResponseDto_1.BasicResponseDto(err.message, undefined));
         }
     }
-    //Criar usuario
     async listarUsuarios(fail, success) {
         try {
-            const usuarios = await this.usuarioService.listarUsuarioComFiltro({});
+            const usuarios = await this.usuarioService.listarUsuarios();
             return success(202, new BasicResponseDto_1.BasicResponseDto("Usuários Cadastrados: ", usuarios));
         }
         catch (err) {
             return fail(400, new BasicResponseDto_1.BasicResponseDto(err.message, undefined));
         }
     }
-    //Lista todos os usuarios cadastrados
     async filtrarUsuario(cpf, fail, success) {
         try {
-            const usuarioEncontrado = await this.usuarioService.buscarUsuario(cpf); // cpf é string
+            const usuarioEncontrado = await this.usuarioService.filtrarUsuario({ cpf: Number(cpf) });
             return success(200, new BasicResponseDto_1.BasicResponseDto("Usuário encontrado com sucesso!", usuarioEncontrado));
         }
         catch (err) {
             return fail(400, new BasicResponseDto_1.BasicResponseDto(err.message, undefined));
         }
     }
-    //Retorna um usuario com o cpf
     async atualizarUsuario(cpf, dto, fail, success) {
         try {
-            const usuarioAtualizado = await this.usuarioService.atualizarUsuario(cpf, dto);
+            const usuarioAtualizado = await this.usuarioService.atualizaUsuario({
+                cpf: cpf,
+                novosDados: dto
+            });
             return success(200, new BasicResponseDto_1.BasicResponseDto("Usuario atualizado com sucesso!", usuarioAtualizado));
         }
         catch (err) {
             return fail(400, new BasicResponseDto_1.BasicResponseDto(err.message, undefined));
         }
     }
-    //Alterar usuario
     async removerUsuario(cpf, fail, success) {
         try {
-            const usuarioRemovido = await this.usuarioService.removerUsuario(cpf);
+            const usuarioRemovido = await this.usuarioService.removeUsuario(cpf);
             return success(200, new BasicResponseDto_1.BasicResponseDto("Usuário Removido com sucesso!", usuarioRemovido));
         }
         catch (err) {
@@ -81,7 +78,7 @@ __decorate([
     __param(1, (0, tsoa_1.Res)()),
     __param(2, (0, tsoa_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [UsuarioDto_1.Usuario, Function, Function]),
+    __metadata("design:paramtypes", [UsuarioDto_1.UsuarioDto, Function, Function]),
     __metadata("design:returntype", Promise)
 ], UsuarioController.prototype, "criarUsuario", null);
 __decorate([
@@ -98,7 +95,7 @@ __decorate([
     __param(1, (0, tsoa_1.Res)()),
     __param(2, (0, tsoa_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Function, Function]),
+    __metadata("design:paramtypes", [Number, Function, Function]),
     __metadata("design:returntype", Promise)
 ], UsuarioController.prototype, "filtrarUsuario", null);
 __decorate([
@@ -108,7 +105,7 @@ __decorate([
     __param(2, (0, tsoa_1.Res)()),
     __param(3, (0, tsoa_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, UsuarioDto_1.Usuario, Function, Function]),
+    __metadata("design:paramtypes", [Number, UsuarioDto_1.UsuarioDto, Function, Function]),
     __metadata("design:returntype", Promise)
 ], UsuarioController.prototype, "atualizarUsuario", null);
 __decorate([
@@ -117,12 +114,10 @@ __decorate([
     __param(1, (0, tsoa_1.Res)()),
     __param(2, (0, tsoa_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Function, Function]),
+    __metadata("design:paramtypes", [Number, Function, Function]),
     __metadata("design:returntype", Promise)
 ], UsuarioController.prototype, "removerUsuario", null);
 exports.UsuarioController = UsuarioController = __decorate([
-    (0, tsoa_1.Route)("usuario")
-    //endpoints estaram na rota base /usuario
-    ,
+    (0, tsoa_1.Route)("usuario"),
     (0, tsoa_1.Tags)("Usuário")
 ], UsuarioController);

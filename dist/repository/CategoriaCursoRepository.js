@@ -40,35 +40,24 @@ class CategoriaCursoRepository {
         }
     }
     async listarCategorias() {
+        const resultado = await (0, mysql_1.executarComandoSQL)("SELECT * FROM biblioteca.CategoriaCurso", []);
         const categorias = [];
-        try {
-            const resultado = await (0, mysql_1.executarComandoSQL)("SELECT * FROM biblioteca.CategoriaCurso", []);
+        if (resultado && resultado.length > 0) {
             for (let i = 0; i < resultado.length; i++) {
-                const dados = resultado[i];
-                const categoria = new CategoriaCurso_1.CategoriaCurso(dados.id, dados.nome);
-                categorias.push(categoria);
+                const row = resultado[i];
+                categorias.push(new CategoriaCurso_1.CategoriaCurso(row.id, row.nome));
             }
-            return categorias;
         }
-        catch (err) {
-            console.error('Erro ao listar categorias:', err);
-            return [];
-        }
+        return categorias;
     }
-    async buscarPorId(id) {
-        const query = `SELECT * FROM biblioteca.CategoriaLivro WHERE id = ?`;
-        try {
-            const resultado = await (0, mysql_1.executarComandoSQL)(query, [id]);
-            if (resultado && resultado.length > 0) {
-                const dados = resultado[0];
-                return new CategoriaCurso_1.CategoriaCurso(dados.id, dados.nome);
-            }
-            return null;
+    async encontrarCategoria(categoria) {
+        const query = `SELECT * FROM biblioteca.CategoriaCurso WHERE nome = ?`;
+        const resultado = await (0, mysql_1.executarComandoSQL)(query, [categoria]);
+        if (resultado && resultado.length > 0) {
+            const row = resultado[0];
+            return new CategoriaCurso_1.CategoriaCurso(row.id, row.nome);
         }
-        catch (err) {
-            console.error("Erro ao buscar categoria por ID:", err);
-            return null;
-        }
+        return null;
     }
 }
 exports.CategoriaCursoRepository = CategoriaCursoRepository;

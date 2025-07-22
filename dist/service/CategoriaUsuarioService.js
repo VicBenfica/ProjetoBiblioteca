@@ -4,13 +4,10 @@ exports.CategoriaUsuarioService = void 0;
 const CategoriaUsuarioRepository_1 = require("../repository/CategoriaUsuarioRepository");
 class CategoriaUsuarioService {
     constructor() {
-        this.categoriaUsuRepository = CategoriaUsuarioRepository_1.CategoriaUsuarioRepository.getInstance();
+        this.categoriaUsuarioRepository = CategoriaUsuarioRepository_1.CategoriaUsuarioRepository.getInstance();
     }
-    listarCategorias() {
-        return this.categoriaUsuRepository.listarCategorias();
-    }
-    buscarPorId(id) {
-        return this.categoriaUsuRepository.buscarPorId(id);
+    async listarCategorias() {
+        return await this.categoriaUsuarioRepository.listarCategoria();
     }
 }
 exports.CategoriaUsuarioService = CategoriaUsuarioService;
