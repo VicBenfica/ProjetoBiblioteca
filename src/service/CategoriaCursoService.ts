@@ -7,7 +7,5 @@ export class CursoService{
         return this.cursoRepository.listarCursos();
     }
 
-    buscarPorId(id: number){
-        return this.cursoRepository.buscarPorId(id);
-    }
+    
 }

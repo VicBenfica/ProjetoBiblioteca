@@ -1,62 +1,75 @@
-import {Usuario} from "../model/Usuario"
+import { Usuario } from "../model/Usuario"
 
-type DadosAtualizacaoUsuario = {
-    nome?: string;
-    email?: string;
-    categoriaId?: number;
-    cursoId?: number;
-}
-
-export class UsuarioRepository{
+export class UsuarioRepository {
     private static instance: UsuarioRepository;
     private usuarios: Usuario[] = [];
 
-    private constructor(){}
+    private constructor() { }
 
-    public static getInstance(): UsuarioRepository{
-        if(!this.instance) {
+    public static getInstance(): UsuarioRepository {
+        if (!this.instance) {
             this.instance = new UsuarioRepository();
         }
         return this.instance;
     }
 
-    InserirUsuario(usuario: Usuario){
+    InserirUsuario(usuario: Usuario) {
         this.usuarios.push(usuario);
     }
 
-    buscarUsuarioPorCPF(cpf:string): Usuario | undefined{
+    buscarUsuarioPorCPF(cpf: number): Usuario | undefined {
         return this.usuarios.find(usuario => usuario.cpf === cpf);
     }
-
-    listarUsuarios(): Usuario[]{
-        return this.usuarios;
+    removeUsuarioPorCPF(cpf: number) {
+        const index = this.findIndex(cpf);
+        return this.usuarios.splice(index, 1);
     }
 
-    atualizarDadosUsuario(cpf: string, novosDados: DadosAtualizacaoUsuario): Usuario | undefined{
-        const usuario = this.buscarUsuarioPorCPF(cpf);
-        if(!usuario) return undefined;
+    atualizarUsuarioPorCPF(cpf: number, novosDados: any) {
+        const index = this.findIndex(cpf);
+        const usuario = this.usuarios[index];
 
-        if(novosDados.nome){
+        if (novosDados.nome) {
             usuario.nome = novosDados.nome;
         }
-        if(novosDados.email){
+
+        if (novosDados.email) {
             usuario.email = novosDados.email;
         }
-        if(novosDados.categoriaId){
-            usuario.categoriaId = novosDados.categoriaId;
+
+        if (novosDados.categoria) {
+            usuario.categoria = novosDados.categoria;
         }
-        if(novosDados.cursoId){
-            usuario.cursoId = novosDados.cursoId;
+
+        if (novosDados.curso) {
+            usuario.curso = novosDados.curso;
         }
+
+        if (novosDados.status) {
+            usuario.status = novosDados.status;
+        }
+
+        this.usuarios[index] = usuario;
+
         return usuario;
     }
 
-    removerUsuario(cpf: string): boolean{
-        const index = this.usuarios.findIndex(u => u.cpf === cpf);
-        if(index == -1){
-            return false;
-        }
-        this.usuarios.splice(index, 1);
-        return true;
+    listarUsuarios(): Usuario[] {
+        return this.usuarios;
     }
+
+    validacaoCadastro(cpf: number): boolean {
+        return this.buscarUsuarioPorCPF(cpf) !== undefined;
+    }
+
+    private findIndex(cpf: number): number {
+        const index = this.usuarios.findIndex(user => user.cpf == cpf);
+
+        if (index == -1) {
+            throw new Error("CPF informado não foi encontrado!");
+        }
+
+        return index;
+    }
+
 }

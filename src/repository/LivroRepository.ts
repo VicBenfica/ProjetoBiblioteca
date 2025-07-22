@@ -1,12 +1,5 @@
 import { Livro } from "../model/Livro";
 
-type DadosAtualizacaoLivro = {
-    titulo?: string;
-    autor?: string;
-    editora?: string;
-    edicao?: string;
-    categoriaId?: number;
-}
 
 export class LivroRepository {
     private static instance: LivroRepository;
@@ -25,22 +18,26 @@ export class LivroRepository {
         this.livros.push(livro);
     }
 
-    buscarLivroPorISBN(isbn: string): Livro | undefined {
-        return this.livros.find((livro) => livro.isbn === isbn);
+    validacaoISBN(isbn: number): boolean {
+        return isbn.toString().length === 13;
     }
 
-    buscarLivroPorAutorEditoraEdicao(autor: string, editora: string, edicao: string): Livro | undefined{
-        return this.livros.find(livro => livro.autor.toLowerCase() === autor.toLowerCase()
-        && livro.editora.toLowerCase() === editora.toLowerCase() && livro.edicao === edicao);
+    filtraLivroPorISBN(isbn: number){
+        return this.livros.find(livro => livro.isbn === isbn);
     }
 
-    listarLivros(): Livro[] {
-        return this.livros;
+    validacaoLivro(isbn: number): boolean{
+        return this.filtraLivroPorISBN(isbn) !== undefined;
     }
 
-    atualizarDadosLivro(isbn: string, novosDados: DadosAtualizacaoLivro){
-        const livro = this.buscarLivroPorISBN(isbn);
-        if(!livro) return undefined;
+    removeLivroPorISBN(isbn: number){
+        const index = this.findIndex(isbn);
+        return this.livros.splice(index, 1);
+    }
+
+    atualizarLivroPorISBN(isbn: number, novosDados: any){
+        const index = this.findIndex(isbn);
+        const livro = this.livros[index];
 
         if(novosDados.titulo){
             livro.titulo = novosDados.titulo;
@@ -58,19 +55,30 @@ export class LivroRepository {
             livro.edicao = novosDados.edicao;
         }
 
-        if(novosDados.categoriaId){
-            livro.categoriaId = novosDados.categoriaId;
+        if(novosDados.categoria){
+            livro.categoria = novosDados.categoria;
         }
+
+        if(novosDados.status){
+            livro.status = novosDados.status;
+        }
+
+        this.livros[index] = livro;
 
         return livro;
     }
 
-    removerLivro(isbn: string): boolean{
-        const index = this.livros.findIndex(l => l.isbn == isbn);
+    listarLivros(): Livro[]{
+        return this.livros;
+    }
+
+    private findIndex(isbn: number): number{
+        const index = this.livros.findIndex(livro => livro.isbn == isbn);
+
         if(index == -1){
-            return false;
+            throw new Error("ISBN informado não foi encontrado!");
         }
-        this.livros.splice(index, 1);
-        return true;
+
+        return index;
     }
 }

@@ -6,84 +6,87 @@ export class UsuarioController{
 
     criarUsuario(req: Request, res: Response): void{
         try{
-            const usuario = this.usuarioService.cadastrarUsuario(req.body);
+            const usuario = this.usuarioService.novoUsuario(req.body);
             res.status(201).json(usuario);
-        }catch(error: unknown){
-            let message: string = "Não foi possível criar o registro";
+        } catch(error: unknown){
+            let message: string = "Não foi possivel criar usuário!"
             if(error instanceof Error){
-                message = error.message;
+                message = error.message
             }
             res.status(400).json({
                 message: message
-            });
+            })
         }
     }
 
-    listarUsuario(req: Request, res: Response): void{
+    listarUsuarios(req: Request, res: Response): void{
         try{
-            const filtros = req.query;
-            const usuario = this.usuarioService.listarUsuarioComFiltro(filtros);
-            res.status(201).json(usuario);
-        }
-        catch(error: unknown){
-            let message: string = "Não foi possível listar os usuários";
+            const lista = this.usuarioService.listarUsuarios();
+            res.status(200).json(lista);
+        } catch(error: unknown){
+           let message = "Não conseguimos realizar a listagem de usuários";
             if(error instanceof Error){
                 message = error.message;
             }
             res.status(400).json({
                 message: message
-            });
+            })
         }
     }
 
-    buscarUsuario(req: Request, res: Response): void{
-        const cpf = req.params.cpf;
+    filtrarUsuario(req: Request, res: Response): void{
         try{
-            const usuario = this.usuarioService.buscarUsuario(cpf);
-            res.status(201).json(usuario);
-        }
-        catch(error: unknown){
-            let message: string = "Não foi possível retornar o usuário";
+            const usuario = this.usuarioService.filtrarUsuario({ cpf: Number(req.params.cpf)});
+            res.status(200).json(usuario);
+        } catch(error: unknown){
+            let message = "Não existe esse usuario em nosso cadastro, por favor cadastre esse usuario";
             if(error instanceof Error){
                 message = error.message;
             }
             res.status(400).json({
                 message: message
-            });
+            })
         }
     }
 
     atualizarUsuario(req: Request, res: Response): void{
-        const cpf = req.params.cpf;
         try{
-            const usuario = this.usuarioService.atualizarUsuario(cpf, req.body);
-            res.status(201).json(usuario);
-        }
-        catch(error: unknown){
-            let message: string = "Não foi possível atualizar usuário";
+            const usuarioAtualizado = this.usuarioService.atualizaUsuario({
+                cpf: Number(req.params.cpf),
+                novosDados: req.body
+            });
+
+            res.status(200).json(usuarioAtualizado);
+        } catch(error: unknown){
+            let message = "Não foi possivel realizar atualização";
             if(error instanceof Error){
                 message = error.message;
             }
             res.status(400).json({
                 message: message
-            });
+            })
         }
     }
 
     removerUsuario(req: Request, res: Response): void{
-        const cpf = req.params.cpf;
         try{
-            const usuario = this.usuarioService.removerUsuario(cpf);
-            res.status(204).send();
-        }
-        catch(error: unknown){
-            let message: string = "Não foi possível remover usuário";
+            const cpf = Number(req.params.cpf);
+            const usuario = this.usuarioService.removeUsuario(cpf);
+
+            res.status(200).json({
+                "status": "Usuario Deletado com Sucesso!",
+                "usuario": usuario
+
+            })
+        } catch(error: unknown){
+            let message = "Não foi possivel realizar a remoção";
             if(error instanceof Error){
                 message = error.message;
             }
             res.status(400).json({
                 message: message
-            });
+            })
         }
     }
+
 }

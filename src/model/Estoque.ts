@@ -1,15 +1,25 @@
 export class Estoque{
-    codigo: number;
-    livro_isbn: string;
+    static ultimoId: number = 0;
+
+    isbn: number;
+    cod: number;
     quantidade: number;
     quantidade_emprestada: number;
-    status: 'disponivel' | 'emprestado';
+    disponibilidade: 'disponivel' | 'não-disponivel';
 
-    constructor(codigo: number, livro_isbn: string, quantidade: number, quantidade_emprestada: number){
-        this.codigo = codigo;
-        this.livro_isbn = livro_isbn;
-        this.quantidade = quantidade;
-        this.quantidade_emprestada = quantidade_emprestada;
-        this.status = 'disponivel';
+    constructor(isbn: number, quantidade: number, quantidade_emprestada: number){
+        if(!isbn || !quantidade){
+            throw new Error("Por favor informar todos os campos");
+        }
+        this.isbn = isbn;
+        this.cod = this.gerarId();
+        this.quantidade = quantidade
+        this.quantidade_emprestada = quantidade_emprestada
+        this.disponibilidade = 'disponivel';
+    }
+
+    gerarId(): number{
+        Estoque.ultimoId++;
+        return Estoque.ultimoId;
     }
 }

@@ -1,9 +1,16 @@
-export class CategoriaLivro {
+export class CategoriaLivro{
+    static ultimoId: number = 0;
+
     id: number;
     nome: string;
 
-    constructor(id: number, nome: string) {
-        this.id = id;
+    constructor(nome: string){
+        this.id = this.gerarId();
         this.nome = nome;
+    }
+
+    gerarId(): number{
+        CategoriaLivro.ultimoId++;
+        return CategoriaLivro.ultimoId;
     }
 }

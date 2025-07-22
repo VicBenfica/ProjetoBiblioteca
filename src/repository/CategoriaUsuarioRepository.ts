@@ -2,26 +2,27 @@ import { CategoriaUsuario } from "../model/CategoriaUsuario";
 
 export class CategoriaUsuarioRepository{
     private static instance: CategoriaUsuarioRepository;
-    private categorias: CategoriaUsuario[] = [
-        new CategoriaUsuario(1, "Professor"),
-        new CategoriaUsuario(2, "Aluno"),
-        new CategoriaUsuario(3, "Bibliotecário")
-    ];
+    private categorias: CategoriaUsuario[] = [];
 
-    private constructor(){}
+   private constructor() {
+        this.categorias.push(new CategoriaUsuario("Aluno"));
+        this.categorias.push(new CategoriaUsuario("Professor"));
+        this.categorias.push(new CategoriaUsuario("Bibliotecario"));
+    };
 
-    public static getInstance(): CategoriaUsuarioRepository {
+    public static getInstance(): CategoriaUsuarioRepository{
         if(!this.instance){
-            this.instance = new CategoriaUsuarioRepository;
+            this.instance = new CategoriaUsuarioRepository();
         }
+
         return this.instance;
     }
 
-    listarCategorias(): CategoriaUsuario[]{
+    listarCategoria(){
         return this.categorias;
     }
 
-    buscarPorId(id: number): CategoriaUsuario | undefined{
-        return this.categorias.find(cat => cat.id === id);
+    encontrarCategoria(cat: string){
+        return this.categorias.find(categoria => categoria.nome === cat)
     }
 }

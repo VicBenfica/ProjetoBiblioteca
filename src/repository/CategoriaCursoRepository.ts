@@ -3,27 +3,27 @@ import { CategoriaCurso } from "../model/CategoriaCurso";
 
 export class CursoRepository{
     private static instance: CursoRepository;
-    private cursos: CategoriaCurso[] = [
-        new CategoriaCurso(0, "Não se Aplica"),
-        new CategoriaCurso(1, "ADS"),
-        new CategoriaCurso(2, "Pedagogia"),
-        new CategoriaCurso(3, "Administração")
-    ];
+    private cursos: CategoriaCurso[] = [];
 
-    private constructor(){}
-
-    public static getInstance(): CursoRepository {
+    private constructor() {
+        this.cursos.push(new CategoriaCurso("ADS"));
+        this.cursos.push(new CategoriaCurso("Pedagogia"));
+        this.cursos.push(new CategoriaCurso("Administração"));
+    };
+    
+    public static getInstance(): CursoRepository{
         if(!this.instance){
-            this.instance = new CursoRepository;
+            this.instance = new CursoRepository();
         }
+    
         return this.instance;
     }
 
-    listarCursos(): CategoriaCurso[]{
-            return this.cursos;
-        }
-    
-        buscarPorId(id: number): CategoriaCurso | undefined{
-            return this.cursos.find(curso => curso.id === id);
-        }
+    listarCursos(){
+        return this.cursos;
     }
+
+    encontrarCurso(cur: string){
+        return this.cursos.find(curso => curso.nome === cur);
+    }
+}

@@ -1,10 +1,16 @@
+export class CategoriaUsuario{
+    static ultimoId: number = 0;
 
-export class CategoriaUsuario {
     id: number;
     nome: string;
 
-    constructor(id: number, nome: string) {
-        this.id = id;
+    constructor(nome: string){
+        this.id = this.gerarId();
         this.nome = nome;
+    }
+
+    gerarId(): number{
+        CategoriaUsuario.ultimoId++;
+        return CategoriaUsuario.ultimoId;
     }
 }
