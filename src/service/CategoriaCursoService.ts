@@ -1,13 +1,10 @@
 import { CategoriaCursoRepository } from "../repository/CategoriaCursoRepository";
+import { CategoriaCurso } from "../model/entity/CategoriaCurso";
 
-export class CursoService{
-    cursoRepository = CategoriaCursoRepository.getInstance();
+export class CategoriaCursoService{
+    private categoriaCursoRepository = CategoriaCursoRepository.getInstance();
 
-    listarCursos(){
-        return this.cursoRepository.listarCategorias();
-    }
-
-    buscarPorId(id: number){
-        return this.cursoRepository.buscarPorId(id);
+    async listarCursos(): Promise<CategoriaCurso[]>{
+        return await this.categoriaCursoRepository.listarCategorias();
     }
 }

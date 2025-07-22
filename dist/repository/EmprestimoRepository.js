@@ -2,40 +2,37 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmprestimoRepository = void 0;
 class EmprestimoRepository {
-    static instance;
-    emprestimos = [];
-    idCounter = 1;
-    constructor() { }
+    constructor() {
+        this.emprestimos = [];
+    }
     static getInstance() {
         if (!this.instance) {
             this.instance = new EmprestimoRepository();
         }
         return this.instance;
     }
-    gerarNovoId() {
-        return this.idCounter++;
-        //usa o id para gerar novos ids
+    inserir(emprestimo) {
+        this.emprestimos.push(emprestimo);
     }
-    //Listar
     listarEmprestimos() {
         return this.emprestimos;
     }
-    buscarPorId(id) {
+    buscarEmprestimoPorId(id) {
         return this.emprestimos.find(e => e.id === id);
     }
-    //Registrar
-    salvarEmprestimo(emprestimo) {
-        this.emprestimos.push(emprestimo);
-    }
-    //Registrar devolucao
-    atualizarEmprestimo(emprestimo) {
-        const index = this.emprestimos.findIndex(e => e.id === emprestimo.id);
-        //posição dentro do array que qr atualizar
-        if (index !== -1) {
-            //Se achou, quando não acha é -1
-            this.emprestimos[index] = emprestimo;
-            //substitui pelo novo emprestimo
+    registrarDevolucao(id, data) {
+        const emprestimo = this.buscarEmprestimoPorId(id);
+        if (emprestimo && !emprestimo.dataEntrega) {
+            emprestimo.dataEntrega = data;
+            return true;
         }
+        return false;
+    }
+    listarPorUsuario(cpf) {
+        return this.emprestimos.filter(e => e.cpfUsuario === cpf);
+    }
+    emprestimosAbertos(cpf) {
+        return this.emprestimos.filter(e => e.cpfUsuario === cpf && !e.dataEntrega);
     }
 }
 exports.EmprestimoRepository = EmprestimoRepository;

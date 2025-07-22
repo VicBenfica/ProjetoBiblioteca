@@ -1,6 +1,13 @@
-// src/model/dto/ExemplarDto.ts
-export interface Estoque {
-  codigo: number;
-  livro_isbn: string;
-  status: 'disponivel' | 'emprestado';
+export class EstoqueDto{
+    isbn?: string;
+    quantidade?: number;
+    quantidade_emprestada?: number;
+    disponibilidade?: 'disponivel' | 'emprestado';
+
+    constructor(isbn?: string, quantidade?: number, quantidade_emprestada?: number, disponibilidade?: 'disponivel' | 'emprestado') {
+        this.isbn = isbn;
+        this.quantidade = quantidade;
+        this.quantidade_emprestada = quantidade_emprestada ?? 0;
+        this.disponibilidade = disponibilidade;
+    }
 }

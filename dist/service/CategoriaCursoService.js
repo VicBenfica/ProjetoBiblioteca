@@ -1,16 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CategoriaCursoService = void 0;
+exports.CursoService = void 0;
 const CategoriaCursoRepository_1 = require("../repository/CategoriaCursoRepository");
-class CategoriaCursoService {
-    categoriaCursoRepository = CategoriaCursoRepository_1.CategoriaCursoRepository.getInstance();
-    listarCategorias() {
-        return this.categoriaCursoRepository.listarCursos();
+class CursoService {
+    constructor() {
+        this.cursoRepository = CategoriaCursoRepository_1.CategoriaCursoRepository.getInstance();
     }
-    //retorna todos os cursos cadastrados
-    buscarCategorias(id) {
-        return this.categoriaCursoRepository.buscarPorId(id);
-        //busca o curso por id
+    listarCursos() {
+        return this.cursoRepository.listarCategorias();
+    }
+    buscarPorId(id) {
+        return this.cursoRepository.buscarPorId(id);
     }
 }
-exports.CategoriaCursoService = CategoriaCursoService;
+exports.CursoService = CursoService;

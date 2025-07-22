@@ -1,23 +1,18 @@
-export class EstoqueEntity {
-    codigo: number;
-    livro_isbn: string;
+export class EstoqueEntity{
+    id: number;
+    isbn: string;
     quantidade: number;
     quantidade_emprestada: number;
-    status: 'disponivel' | 'emprestado';
+    disponibilidade: 'disponivel' | 'emprestado';
 
-    constructor(
-        codigo: number,
-        livro_isbn: string,
-        quantidade: number,
-        quantidade_emprestada: number,
-        status?: 'disponivel' | 'emprestado' // opcional
-    ) {
-        this.codigo = codigo;
-        this.livro_isbn = livro_isbn;
+    constructor(id?: number, isbn?: string, quantidade?: number, quantidade_emprestada?: number){
+        if(!isbn || !quantidade){
+            throw new Error("Por favor informar todos os campos");
+        }
+        this.id = id || 0;
+        this.isbn = isbn;
         this.quantidade = quantidade;
-        this.quantidade_emprestada = quantidade_emprestada;
-
-        // Se o status for passado, usa ele. Caso contrário, calcula automaticamente.
-        this.status = status ?? (quantidade_emprestada < quantidade ? 'disponivel' : 'emprestado');
+        this.quantidade_emprestada = quantidade_emprestada || 0;
+        this.disponibilidade = 'disponivel';
     }
 }

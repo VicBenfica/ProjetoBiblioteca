@@ -1,147 +1,71 @@
+import { LivroDto } from "../model/dto/LivroDto";
 import { LivroEntity } from "../model/entity/LivroEntity";
-import { LivroRepository } from "../repository/LivroRepository";
-import { CategoriaLivroService } from "./CategoriaLivroService";
+import { CategoriaLivroRepository } from "../repository/CategoriaLivroRepository";
 import { EstoqueRepository } from "../repository/EstoqueRepository";
-import { EmprestimoRepository } from "../repository/EmprestimoRepository";
-import { EstoqueService } from "./EstoqueService";
+import { LivroRepository } from "../repository/LivroRepository";
 
-type DadosAtualizacaoLivro = {
-    isbn?: string;
-    titulo?: string;
-    autor?: string;
-    editora?: string;
-    edicao?: string;
-    categoriaId?: number;
-};
+export class LivroService{
+    private livroRepository = LivroRepository.getInstance();
+    private categoriaLivroRepository = CategoriaLivroRepository.getInstance();
+    private estoqueRepository = EstoqueRepository.getInstance();
 
-export class LivroService {
-    livroRepository = LivroRepository.getInstance();
-    categoriaService = new CategoriaLivroService();
-    estoqueService = new EstoqueService();
-    estoqueRepository = EstoqueRepository.getInstance();
-    emprestimoRepository = EmprestimoRepository.getInstance();
-
-    public async adicionarLivro(livroData: any): Promise<LivroEntity> {
-        const { isbn, titulo, autor, editora, edicao, categoriaId } = livroData;
-
-        if (!isbn || !titulo || !autor || !editora || !edicao || !categoriaId) {
-            throw new Error("Informações incompletas para cadastrar livro.");
+    async novoLivro(data: any): Promise<LivroEntity>{
+        if(!(await this.categoriaLivroRepository.encontrarCategoria(data.categoria))){
+            throw new Error("Por favor informar uma categoria existente");
         }
 
-        const categoria = await this.categoriaService.buscarPorId(categoriaId);
-        if (!categoria) {
-            throw new Error("Categoria inválida!");
+        if(!this.livroRepository.validacaoISBN(data.isbn)){
+            throw new Error("É necessário de 13 digitos obrigatorios da ISBN para cadastrar um livro!");
         }
 
-        const existente = await this.livroRepository.buscarLivroPorISBN(isbn);
-        if (existente) {
-            throw new Error("Livro com esse ISBN já existe!");
+        if(await this.livroRepository.validacaoLivro(data.isbn)){
+            throw new Error("Este livro já é cadastrado!");
         }
 
-        const livroDuplicado = await this.livroRepository.buscarLivroPorAutorEditoraEdicao(autor, editora, edicao);
-        if (livroDuplicado) {
-            throw new Error("Já existe um livro com este autor, editora e edição!");
-        }
-
-        const novoLivro = new LivroEntity(isbn, titulo, autor, editora, edicao, categoriaId);
-        return await this.livroRepository.insertLivro(novoLivro);
+        return await this.livroRepository.insereLivro(data);
     }
 
-    public async listarLivroComFiltro(filtros: any): Promise<LivroEntity[]> {
-        const { isbn, titulo, autor, categoriaId } = filtros;
-        const livros = await this.livroRepository.listarLivros();
+    async filtrarLivro(data: any): Promise<LivroEntity | null>{
+        const isbn = String(data.isbn);
+        const livro = await this.livroRepository.filtraLivroPorISBN(isbn);
 
-        return livros.filter(livro => {
-            const combinaISBN = isbn ? livro.isbn.toLowerCase().includes(isbn.toLowerCase()) : true;
-            const combinaTitulo = titulo ? livro.titulo.toLowerCase().includes(titulo.toLowerCase()) : true;
-            const combinaAutor = autor ? livro.autor.toLowerCase().includes(autor.toLowerCase()) : true;
-            const combinaCatId = categoriaId ? livro.categoriaId === categoriaId : true;
-            return combinaISBN && combinaTitulo && combinaAutor && combinaCatId;
-        });
-    }
-
-    public async buscarLivroPorISBN(isbn: string): Promise<LivroEntity> {
-        const livro = await this.livroRepository.buscarLivroPorISBN(isbn);
-        if (!livro) {
-            throw new Error("Livro não encontrado.");
+        if(livro === null){
+            throw new Error("Este livro ainda não foi cadastrado com esta ISBN!");
         }
+
         return livro;
     }
 
-    public async atualizarLivro(isbn: string, novosDados: DadosAtualizacaoLivro): Promise<LivroEntity> {
-        const livro = await this.livroRepository.buscarLivroPorISBN(isbn);
-        if (!livro) {
-            throw new Error("Livro não encontrado!");
-        }
-
-        if (
-            !novosDados.titulo &&
-            !novosDados.autor &&
-            !novosDados.editora &&
-            !novosDados.edicao &&
-            !novosDados.categoriaId
-        ) {
-            throw new Error("Nenhum dado informado para atualização.");
-        }
-
-        if (novosDados.isbn && novosDados.isbn !== isbn) {
-            throw new Error("Não é permitido alterar o ISBN do livro.");
-        }
-
-        if (novosDados.categoriaId) {
-            const categoria = await this.categoriaService.buscarPorId(novosDados.categoriaId);
-            if (!categoria) {
-                throw new Error("Categoria Inválida!");
+    async removeLivro(isbn: string): Promise<LivroEntity>{
+        const exemplares = await this.estoqueRepository.listarEstoque();
+        for(const exemplar of exemplares){
+            const emprestimosAtivoDoLivro = await this.estoqueRepository.quantidadeLivrosEmprestados(exemplar.id);
+            if (emprestimosAtivoDoLivro) {
+                throw new Error("Não é possível remover o livro: há exemplares emprestados!");
             }
         }
 
-        const livroAtualizado = new LivroEntity(
-            livro.isbn,
-            novosDados.titulo ?? livro.titulo,
-            novosDados.autor ?? livro.autor,
-            novosDados.editora ?? livro.editora,
-            novosDados.edicao ?? livro.edicao,
-            novosDados.categoriaId ?? livro.categoriaId
-        );
-
-        const livroFinal = await this.livroRepository.atualizarDadosLivro(livroAtualizado);
-
-        if (!livroFinal) {
-            throw new Error("Erro ao atualizar livro. Nenhuma linha foi afetada.");
+        const livroRemovido = await this.livroRepository.removeLivroPorISBN(isbn);
+        if(!livroRemovido){
+            throw new Error("Livro não encontrado para remoção!");
         }
-
-        return livroFinal;
+        return livroRemovido;
     }
 
+    async listarLivros(): Promise<LivroEntity[]>{
+        return await this.livroRepository.listarLivros();
+    }
 
-    public async removerLivro(isbn: string): Promise<void> {
-        const livro = await this.livroRepository.buscarLivroPorISBN(isbn);
-        if (!livro) {
-            throw new Error("Livro não encontrado.");
+    async atualizaLivro(data: any): Promise<LivroEntity | null>{
+        const isbn = String(data.isbn);
+        const novosDados = data.novosDados;
+
+        if (novosDados.categoria) {
+            if (!(await this.categoriaLivroRepository.encontrarCategoria(novosDados.categoria))) {
+                throw new Error("Por favor informar uma categoria existente");
+            }
         }
 
-        const exemplares = (await this.estoqueRepository.listarEstoque()).filter(e => e.livro_isbn === isbn);
-        if (exemplares.length > 0) {
-            throw new Error("Não é possível remover o livro: existem exemplares vinculados no estoque.");
-        }
-
-        const emprestimos = await this.emprestimoRepository.listarEmprestimos();
-        const emprestimosAtivos = await Promise.all(
-            emprestimos.map(async e => {
-                const exemplar = await this.estoqueRepository.buscarPorCodigo(e.codigoExemplar);
-                return exemplar && exemplar.livro_isbn === isbn && !e.dataEntrega;
-            })
-        );
-
-        if (emprestimosAtivos.includes(true)) {
-            throw new Error("Não é possível remover o livro: existem empréstimos ativos.");
-        }
-
-        const existeExemplar = await this.estoqueService.existeExemplarDoLivro(isbn);
-        if (existeExemplar) {
-            throw new Error("Não é possível remover o livro: existem exemplares vinculados.");
-        }
-
-        await this.livroRepository.removerLivro(isbn);
+        return await this.livroRepository.atualizarLivroPorISBN(isbn, novosDados);
     }
 }

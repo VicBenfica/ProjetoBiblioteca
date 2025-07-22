@@ -1,61 +1,141 @@
-export class Usuario {
-    static proximoId: number = 0;
-
-    id: number;
-    cpf: string;
+export class UsuarioDto{
     nome: string;
+    cpf: number;
     email: string;
-    categoriaId: number;
-    cursoId: number;
-    status: 'ativo' | 'inativo' | 'suspenso';
-    diaSuspensao: number;
-    suspensaoAte?: Date;
+    categoria: string;
+    curso: string;
+    status?: 'ativo' | 'inativo' | 'suspenso';
+    diasSuspensao?: number;
+    livrosAtrasados?: number;
+    diasAtraso?: number;
 
-    constructor(cpf: string, nome: string, email: string, categoriaId: number, cursoId: number) {
-        if (!Usuario.validarCPF(cpf)) {
-            throw new Error("CPF inválido!");
+
+    constructor(nome?: string, cpf?: number, email?: string, categoria?: string, curso?: string){
+        if(!nome || !cpf || !email || !categoria || !curso){
+            throw new Error("Por favor informar todos os campos");
         }
-
-        this.id = Usuario.proximoId++;
-        this.cpf = cpf;
-        this.nome = nome;
-        this.email = email;
-        this.categoriaId = categoriaId;
-        this.cursoId = cursoId;
-        this.status = 'ativo';
-        this.diaSuspensao = 0;
-    };
-
-
-    static verificarSequenciaRepetida(cpf: string): boolean {
-        const primeiroDigito = cpf[0];
-        for (let i = 0; i < cpf.length; i++) {
-            if (cpf[i] !== primeiroDigito) return false;
-        }
-        return true;
-
+        
+        this.nome = nome || '';
+        this.cpf = this.meuCPF(cpf);
+        this.email = email || '';
+        this.categoria = categoria || '';
+        this.curso = curso || '';
+        this.status = "ativo";
+        this.diasSuspensao = 0 || 0;
+        this.livrosAtrasados = 0 || 0;
+        this.diasAtraso = 0 || 0;
     }
 
-    static validarCPF(cpf: string): boolean {
-        if (!cpf || cpf.length !== 11 || Usuario.verificarSequenciaRepetida(cpf)) return false;
+    sequenciaRepetida(cpfStr: string): boolean{
+        let repetido = true;
 
-        const calcularDigito = (cpf: string, fator: number) => {
-            let total = 0;
-            for (let i = 0; i < fator - 1; i++) {
-                total += parseInt(cpf[i]) * (fator - i);
-            }
-            const resto = total % 11;
-            if (resto < 2) {
-                return 0;
-            }
-            else {
-                return 11 - resto;
+        for (let i = 0; i < cpfStr.length; i++) {
+            if(cpfStr[i] !== cpfStr[0]) {
+                repetido = false;
+                continue;
             }
         }
 
-        const digito1: number = calcularDigito(cpf, 10);
-        const digito2: number = calcularDigito(cpf, 11);
+        if(repetido == true){
+            throw new Error("O CPF não pode ser uma sequência repetida!");
+        } else{
+            return true;
+        }
+    }
 
-        return digito1 === parseInt(cpf[9]) && digito2 === parseInt(cpf[10]);
+    verificarPrimeiroDigito(cpfStr: string): boolean{
+        let soma = 0;
+        for (let i = 0; i < 9; i++) {
+            soma += parseInt(cpfStr[i]) * (10 - i);
+        }
+
+        let resto = soma % 11;
+        let digito1;
+
+        if(resto < 2){
+            digito1 = 0;
+        } else{
+            digito1 = 11 - resto;
+        }
+
+        if(parseInt(cpfStr[9]) === digito1){
+            return true;
+        } else{
+            throw new Error("O CPF é inválido!");
+        }
+    }
+
+    verificarSegundoDigito(cpfStr: string): boolean{
+        let soma = 0;
+        for (let i = 0; i < 10; i++) {
+            soma += parseInt(cpfStr[i]) * (11 - i);
+        }
+
+        let resto = soma % 11;
+        let digito1;
+
+        if(resto < 2){
+            digito1 = 0;
+        } else{
+            digito1 = 11 - resto;
+        }
+
+        if(parseInt(cpfStr[10]) === digito1){
+            return true;
+        } else{
+            throw new Error("O CPF é inválido!");
+        }
+    }
+
+    private meuCPF(cpf: number): number{
+        const cpfStr = cpf.toString();
+        console.log(cpfStr);
+        console.log(`Verificar sequencia: ${this.sequenciaRepetida(cpfStr)}, Primriro Digito: ${this.verificarPrimeiroDigito(cpfStr)}, Segundo Digito: ${this.verificarSegundoDigito(cpfStr)}`)
+
+        if(cpfStr.length != 11){
+            throw new Error("O seu CPF não tem 11 digitos, por favor tente novamente!");
+        }
+
+        const cpfArray: number[] = [];
+        for (let i = 0; i < cpfStr.length; i++) {
+            cpfArray[i] = Number(cpfStr[i]);
+        }
+        
+        if(this.sequenciaRepetida(cpfStr)){
+            
+            if(this.verificarPrimeiroDigito(cpfStr)){
+                if(this.verificarSegundoDigito(cpfStr)){
+                    return parseInt(cpfArray.join(''));
+                }
+            }
+        }
+        throw new Error("CPF inválido ou não pode ser validado.");
+    }
+
+    atualizarStatusPorAtraso(diasAtraso: number): void {
+        if(this.diasSuspensao){
+            this.diasSuspensao += (diasAtraso * 3);
+        
+            if (this.diasSuspensao > 60) {
+                this.status = "suspenso";
+            }
+        }
+    }
+
+    atualizarLivrosAtrasados(quantidade: number): void {
+        this.livrosAtrasados = quantidade;
+        if (this.livrosAtrasados > 2) {
+            this.status = "inativo";
+        }
+    }
+
+    podeRealizarEmprestimo(): boolean {
+        return this.status === "ativo";
+    }
+
+    regularizarStatus(): void {
+        if (this.livrosAtrasados === 0 && this.diasSuspensao === 0) {
+            this.status = "ativo";
+        }
     }
 }

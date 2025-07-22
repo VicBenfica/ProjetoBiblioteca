@@ -1,90 +1,128 @@
 "use strict";
-// src/controller/UsuarioController.ts
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsuarioController = void 0;
 const UsuarioService_1 = require("../service/UsuarioService");
-const EmprestimoRepository_1 = require("../repository/EmprestimoRepository"); // Manter import
-class UsuarioController {
-    usuarioService = new UsuarioService_1.UsuarioService();
-    criarUsuario(req, res) {
+const tsoa_1 = require("tsoa");
+//importação dos decorators do tsoa
+const UsuarioDto_1 = require("../model/dto/UsuarioDto");
+const BasicResponseDto_1 = require("../model/dto/BasicResponseDto");
+// importação dos Dto
+let UsuarioController = class UsuarioController extends tsoa_1.Controller {
+    constructor() {
+        super(...arguments);
+        this.usuarioService = new UsuarioService_1.UsuarioService();
+    }
+    async criarUsuario(dto, fail, success) {
         try {
-            const usuario = this.usuarioService.novoUsuario(req.body);
-            res.status(201).json(usuario); // 201 Created é CORRETO para criação
+            const usuario = await this.usuarioService.cadastrarUsuario(dto);
+            return success(201, new BasicResponseDto_1.BasicResponseDto("Usuario criado com sucesso", usuario));
         }
-        catch (error) {
-            let message = "Não foi possível criar o registro!!";
-            if (error instanceof Error) {
-                message = error.message;
-            }
-            res.status(400).json({ message: message });
+        catch (err) {
+            return fail(400, new BasicResponseDto_1.BasicResponseDto(err.message, undefined));
         }
     }
-    removerUsuario(req, res) {
+    //Criar usuario
+    async listarUsuarios(fail, success) {
         try {
-            const emprestimos = EmprestimoRepository_1.EmprestimoRepository.getInstance().listarEmprestimos();
-            // A remoção no service agora recebe o CPF e a lista de empréstimos
-            const removido = this.usuarioService.removeUsuarioPorCpf(req.body.cpf, emprestimos);
-            if (!removido) {
-                res.status(400).json({ message: "Não foi possível remover o usuário. Ele pode possuir empréstimos ativos." });
-            }
-            else {
-                res.status(200).json({ message: "Usuário removido com sucesso." }); // 200 OK é CORRETO para remoção com corpo
-                // Alternativa: res.status(204).send(); para No Content
-            }
+            const usuarios = await this.usuarioService.listarUsuarioComFiltro({});
+            return success(202, new BasicResponseDto_1.BasicResponseDto("Usuários Cadastrados: ", usuarios));
         }
-        catch (error) {
-            let message = "Não foi possível remover o usuário!!";
-            if (error instanceof Error) {
-                message = error.message;
-            }
-            res.status(400).json({ message: message });
+        catch (err) {
+            return fail(400, new BasicResponseDto_1.BasicResponseDto(err.message, undefined));
         }
     }
-    atualizarNovoUsuario(req, res) {
+    //Lista todos os usuarios cadastrados
+    async filtrarUsuario(cpf, fail, success) {
         try {
-            const cpf = req.params.cpf;
-            const novosDados = req.body;
-            const usuario = this.usuarioService.atualizarUsuario(cpf, novosDados);
-            if (!usuario) {
-                res.status(404).json({ message: "Usuário não encontrado para atualização." });
-                return;
-            }
-            res.status(200).json(usuario); // 200 OK é CORRETO para atualização
+            const usuarioEncontrado = await this.usuarioService.buscarUsuario(cpf); // cpf é string
+            return success(200, new BasicResponseDto_1.BasicResponseDto("Usuário encontrado com sucesso!", usuarioEncontrado));
         }
-        catch (error) {
-            let message = "Não foi possível atualizar o usuário!!";
-            if (error instanceof Error) {
-                message = error.message;
-            }
-            res.status(400).json({ message: message });
+        catch (err) {
+            return fail(400, new BasicResponseDto_1.BasicResponseDto(err.message, undefined));
         }
     }
-    detalharUsuario(req, res) {
+    //Retorna um usuario com o cpf
+    async atualizarUsuario(cpf, dto, fail, success) {
         try {
-            const cpf = req.params.cpf;
-            const usuario = this.usuarioService.detalhesUsuario(cpf);
-            if (!usuario) {
-                res.status(404).json({ message: "Usuário não encontrado." });
-                return;
-            }
-            res.status(200).json(usuario); // 200 OK é CORRETO para detalhamento
+            const usuarioAtualizado = await this.usuarioService.atualizarUsuario(cpf, dto);
+            return success(200, new BasicResponseDto_1.BasicResponseDto("Usuario atualizado com sucesso!", usuarioAtualizado));
         }
-        catch (error) {
-            let message = "Não foi possível detalhar o usuário!!";
-            if (error instanceof Error) {
-                message = error.message;
-            }
-            res.status(400).json({ message: message });
+        catch (err) {
+            return fail(400, new BasicResponseDto_1.BasicResponseDto(err.message, undefined));
         }
     }
-    listar(req, res) {
+    //Alterar usuario
+    async removerUsuario(cpf, fail, success) {
         try {
-            const usuarios = this.usuarioService.listarTodos();
-            res.status(200).json(usuarios); // 200 OK é CORRETO para listagem
+            const usuarioRemovido = await this.usuarioService.removerUsuario(cpf);
+            return success(200, new BasicResponseDto_1.BasicResponseDto("Usuário Removido com sucesso!", usuarioRemovido));
         }
-        catch (error) { // Any aqui é aceitável para o error, mas melhor usar unknown e type guard
-            res.status(500).json({ message: error.message });
+        catch (err) {
+            return fail(400, new BasicResponseDto_1.BasicResponseDto(err.message, undefined));
         }
     }
-}
+};
 exports.UsuarioController = UsuarioController;
+__decorate([
+    (0, tsoa_1.Post)(),
+    __param(0, (0, tsoa_1.Body)()),
+    __param(1, (0, tsoa_1.Res)()),
+    __param(2, (0, tsoa_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [UsuarioDto_1.Usuario, Function, Function]),
+    __metadata("design:returntype", Promise)
+], UsuarioController.prototype, "criarUsuario", null);
+__decorate([
+    (0, tsoa_1.Get)(),
+    __param(0, (0, tsoa_1.Res)()),
+    __param(1, (0, tsoa_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Function, Function]),
+    __metadata("design:returntype", Promise)
+], UsuarioController.prototype, "listarUsuarios", null);
+__decorate([
+    (0, tsoa_1.Get)("{cpf}"),
+    __param(0, (0, tsoa_1.Path)()),
+    __param(1, (0, tsoa_1.Res)()),
+    __param(2, (0, tsoa_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Function, Function]),
+    __metadata("design:returntype", Promise)
+], UsuarioController.prototype, "filtrarUsuario", null);
+__decorate([
+    (0, tsoa_1.Put)("{cpf}"),
+    __param(0, (0, tsoa_1.Path)()),
+    __param(1, (0, tsoa_1.Body)()),
+    __param(2, (0, tsoa_1.Res)()),
+    __param(3, (0, tsoa_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, UsuarioDto_1.Usuario, Function, Function]),
+    __metadata("design:returntype", Promise)
+], UsuarioController.prototype, "atualizarUsuario", null);
+__decorate([
+    (0, tsoa_1.Delete)("{cpf}"),
+    __param(0, (0, tsoa_1.Path)()),
+    __param(1, (0, tsoa_1.Res)()),
+    __param(2, (0, tsoa_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Function, Function]),
+    __metadata("design:returntype", Promise)
+], UsuarioController.prototype, "removerUsuario", null);
+exports.UsuarioController = UsuarioController = __decorate([
+    (0, tsoa_1.Route)("usuario")
+    //endpoints estaram na rota base /usuario
+    ,
+    (0, tsoa_1.Tags)("Usuário")
+], UsuarioController);

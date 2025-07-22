@@ -3,12 +3,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CategoriaUsuarioService = void 0;
 const CategoriaUsuarioRepository_1 = require("../repository/CategoriaUsuarioRepository");
 class CategoriaUsuarioService {
-    categoriaUsuarioRepository = CategoriaUsuarioRepository_1.CategoriaUsuarioRepository.getInstance();
-    listar() {
-        return this.categoriaUsuarioRepository.listarUsuarios();
+    constructor() {
+        this.categoriaUsuRepository = CategoriaUsuarioRepository_1.CategoriaUsuarioRepository.getInstance();
     }
-    buscarCategorias(id) {
-        return this.categoriaUsuarioRepository.buscarPorId(id);
+    listarCategorias() {
+        return this.categoriaUsuRepository.listarCategorias();
+    }
+    buscarPorId(id) {
+        return this.categoriaUsuRepository.buscarPorId(id);
     }
 }
 exports.CategoriaUsuarioService = CategoriaUsuarioService;

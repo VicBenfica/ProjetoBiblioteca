@@ -1,27 +1,17 @@
-/* tslint:disable */
-/* eslint-disable */
-// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
 import type { TsoaRoute } from '@tsoa/runtime';
 import {  fetchMiddlewares, ExpressTemplateService } from '@tsoa/runtime';
-// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { UsuarioController } from './../controller/UsuarioController';
-// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { LivroController } from './../controller/LivroController';
-// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { EstoqueController } from './../controller/EstoqueController';
-// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { EmprestimoController } from './../controller/EmprestimoController';
-// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { CategoriaUsuarioController } from './../controller/CategoriaUsuarioController';
-// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { CategoriaLivroController } from './../controller/CategoriaLivroController';
-// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { CursoController } from './../controller/CategoriaCursoController';
+import { CategoriaCursoController } from './../controller/CategoriaCursoController';
 import type { Request as ExRequest, Response as ExResponse, RequestHandler, Router } from 'express';
 
 
 
-// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
 const models: TsoaRoute.Models = {
     "Usuario": {
@@ -523,7 +513,7 @@ export function RegisterRoutes(app: Router) {
         };
         app.put('/estoque/:id',
             ...(fetchMiddlewares<RequestHandler>(EstoqueController)),
-            ...(fetchMiddlewares<RequestHandler>(EstoqueController.prototype.atualizarDisponibilidade)),
+            ...(fetchMiddlewares<RequestHandler>(EstoqueController.prototype.atualizarDisponibildade)),
 
             async function EstoqueController_atualizarDisponibilidade(request: ExRequest, response: ExResponse, next: any) {
 
@@ -742,18 +732,17 @@ export function RegisterRoutes(app: Router) {
                 success: {"in":"res","name":"200","required":true,"ref":"BasicResponseDto"},
         };
         app.get('/categoria-cursos',
-            ...(fetchMiddlewares<RequestHandler>(CursoController)),
-            ...(fetchMiddlewares<RequestHandler>(CursoController.prototype.listarCurso)),
+            ...(fetchMiddlewares<RequestHandler>(CategoriaCursoController)),
+            ...(fetchMiddlewares<RequestHandler>(CategoriaCursoController.prototype.listarCurso)),
 
             async function CursoController_listarCurso(request: ExRequest, response: ExResponse, next: any) {
 
-            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
             let validatedArgs: any[] = [];
             try {
                 validatedArgs = templateService.getValidatedArgs({ args: argsCursoController_listarCurso, request, response });
 
-                const controller = new CursoController();
+                const controller = new CategoriaCursoController();
 
               await templateService.apiHandler({
                 methodName: 'listarCurso',

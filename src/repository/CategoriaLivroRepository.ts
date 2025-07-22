@@ -1,94 +1,72 @@
 import { CategoriaLivro } from "../model/entity/CategoriaLivro";
 import { executarComandoSQL } from "../database/mysql";
+import { error } from "console";
 
-
-export class CategoriaLivroRepository {
+export class CategoriaLivroRepository{
     private static instance: CategoriaLivroRepository;
 
-
-    private constructor() {
-        this.criarTable();
+    private constructor(){
+        this.createTable();
     }
 
     public static getInstance(): CategoriaLivroRepository {
-        if (!this.instance) {
+        if(!this.instance){
             this.instance = new CategoriaLivroRepository;
         }
         return this.instance;
     }
 
-    private imprimeResult(err: any, result: any) {
-        if (result != undefined) {
-            console.log("Dentro callback", result);
-        }
-    }
-
-    private async criarTable() {
-        const query = `CREATE TABLE IF NOT EXISTS biblioteca.CategoriaLivro(
-            id INT AUTO_INCREMENT PRIMARY KEY, 
-            nome VARCHAR(100) NOT NULL
-            )`
-
-        try {
+    private async createTable(){
+    const query = `CREATE TABLE IF NOT EXISTS biblioteca.CategoriaLivro(
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                nome VARCHAR(100) NOT NULL
+                )`
+        
+        try{
             const resultado = await executarComandoSQL(query, []);
-            console.log('Tabela de categoria de livros criada!', resultado);
-        } catch (err) {
-            console.error('Erro ao executar a query:', err);
+            console.log('Tabela de categoria de livros foi criada com sucesso!', resultado);
+        } catch(err){
+            console.error('Erro ao executar a query de estoque: ', err);
         }
     }
 
-    public async inserirCategoriasPadrao() {
+    private static async inserirCategoriasPadrao(){
         const categorias = ["Romance", "Computação", "Letras", "Gestão"];
-        await executarComandoSQL("CREATE TABLE IF NOT EXISTS biblioteca.CategoriaLivro (id INT AUTO_INCREMENT PRIMARY KEY, nome VARCHAR(100) NOT NULL)", []);
-        for (const nome of categorias) {
-            try {
-                const resultado = await executarComandoSQL(
-                    "INSERT IGNORE INTO biblioteca.CategoriaLivro (nome) VALUES (?)", [nome]);
-                console.log('Categoria criada com sucesso:', resultado);
-            } catch (err) {
-                console.error('Erro ao criar categoria:', err);
-
+        await executarComandoSQL("CREATE TABLE IF NOT EXISTS biblioteca.CategoriaLivro(id INT AUTO_INCREMENT PRIMARY KEY, nome VARCHAR(100) NOT NULL)", []);
+        for(const nome of categorias){
+            try{
+                const resultado = await executarComandoSQL("INSERT IGNORE INTO biblioteca.CategoriaLivro (nome) values (?)",[nome]);
+                console.log('Categoria criada com sucesso!', resultado);
+            } catch(err){
+                console.error(`Erro ao inserir categoria ${nome}:`, err);
             }
         }
-
     }
 
-
-
-    public async listarCategorias(): Promise<CategoriaLivro[]> {
+    async listarCategoriasLivro(): Promise<CategoriaLivro[]>{
+        const resultado = await executarComandoSQL("SELECT * FROM biblioteca.CategoriaLivro", []);
         const categorias: CategoriaLivro[] = [];
 
-        try {
-            const resultado = await executarComandoSQL("SELECT * FROM biblioteca.CategoriaLivro", []);
-
+        if(resultado && resultado.length > 0){
             for (let i = 0; i < resultado.length; i++) {
-                const dados = resultado[i];
-                const categoria = new CategoriaLivro(dados.id, dados.nome);
-                categorias.push(categoria);
+                const row = resultado[i];
+                categorias.push(new CategoriaLivro(row.id, row.nome));
             }
-
-            return categorias;
-        } catch (err) {
-            console.error('Erro ao listar categorias:', err);
-            return [];
         }
+
+        return categorias;
     }
 
-    public async buscarPorId(id: number): Promise<CategoriaLivro | null> {
-        const query = `SELECT * FROM biblioteca.CategoriaLivro WHERE id = ?`;
-        try {
-            const resultado = await executarComandoSQL(query, [id]);
+    async encontrarCategoria(livro: string): Promise<CategoriaLivro | null>{
+        const query = `SELECT * FROM biblioteca.CategoriaLivro WHERE nome = ?`;
+        const resultado = await executarComandoSQL(query, [livro]);
 
-            if (resultado && resultado.length > 0) {
-                const dados = resultado[0];
-                return new CategoriaLivro(dados.id, dados.nome);
-            }
-
-            return null;
-        } catch (err) {
-            console.error("Erro ao buscar categoria por ID:", err);
-            return null;
+        if(resultado && resultado.length > 0){
+            const row = resultado[0];
+            return new CategoriaLivro(row.id, row.nome);
         }
+
+        return null;
     }
 
 }

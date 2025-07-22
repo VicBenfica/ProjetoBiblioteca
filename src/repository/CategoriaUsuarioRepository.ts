@@ -6,6 +6,7 @@ export class CategoriaUsuarioRepository {
 
     private constructor() { 
         this.criarTable();
+        
     }
 
     public static getInstance(): CategoriaUsuarioRepository {
@@ -15,12 +16,7 @@ export class CategoriaUsuarioRepository {
         return this.instance;
     }
 
-    private imprimeResult(err: any, result: any) {
-        if (result != undefined) {
-            console.log("Dentro callback", result);
-        }
-    }
-
+    
     private async criarTable() {
         const query = `CREATE TABLE IF NOT EXISTS biblioteca.CategoriaUsuario(
                 id INT AUTO_INCREMENT PRIMARY KEY, 
@@ -35,57 +31,44 @@ export class CategoriaUsuarioRepository {
         }
     }
 
-    public async inserirCategoriasPadrao() {
-        const categorias = ["Professor", "Aluno", "Bibliotecário"];
-        await executarComandoSQL("CREATE TABLE IF NOT EXISTS biblioteca.CategoriaUsuario (id INT AUTO_INCREMENT PRIMARY KEY, nome VARCHAR(100) NOT NULL)", []);
-        for (const nome of categorias) {
-            try {
-                const resultado = await executarComandoSQL(
-                    "INSERT IGNORE INTO biblioteca.CategoriaUsuario (nome) VALUES (?)", [nome]);
-                console.log('Categoria criada com sucesso:', resultado);
-            } catch (err) {
-                console.error('Erro ao criar categoria:', err);
-
+    
+    private static async inserirCategoriasPadrao(){
+        const categorias = ["Aluno", "Professor", "Bibliotecário"];
+        await executarComandoSQL("DROP TABLE IF EXISTS biblioteca.CategoriaUsuario", []);
+        await executarComandoSQL("CREATE TABLE IF NOT EXISTS biblioteca.CategoriaUsuario(id INT AUTO_INCREMENT PRIMARY KEY, nome VARCHAR(100) NOT NULL)", []);
+        for(const nome of categorias){
+            try{
+                const resultado = await executarComandoSQL("INSERT INTO biblioteca.CategoriaUsuario (nome) VALUES (?)", [nome]);
+                console.log('Categoria criada com sucesso!', resultado);
+            } catch(err){
+                console.error(`Erro ao inserir categoria ${nome}:`, err);
             }
         }
-
     }
 
-
-
-    public async listarCategorias(): Promise<CategoriaUsuario[]> {
+    async listarCategoria(): Promise<CategoriaUsuario[]>{
+        const resultado = await executarComandoSQL("SELECT * FROM biblioteca.CategoriaUsuario", []);
         const categorias: CategoriaUsuario[] = [];
 
-        try {
-            const resultado = await executarComandoSQL("SELECT * FROM biblioteca.CategoriaUsuario", []);
-
+        if(resultado && resultado.length > 0){
             for (let i = 0; i < resultado.length; i++) {
-                const dados = resultado[i];
-                const categoria = new CategoriaUsuario(dados.id, dados.nome);
-                categorias.push(categoria);
-            }
-
-            return categorias;
-        } catch (err) {
-            console.error('Erro ao listar categorias:', err);
-            return [];
+                const row = resultado[i];
+                categorias.push(new CategoriaUsuario(row.id, row.nome));
+            } 
         }
+
+        return categorias;
     }
 
-     public async buscarPorId(id: number): Promise<CategoriaUsuario | null> {
-            const query = `SELECT * FROM biblioteca.CategoriaLivro WHERE id = ?`;
-            try {
-                const resultado = await executarComandoSQL(query, [id]);
-    
-                if (resultado && resultado.length > 0) {
-                    const dados = resultado[0];
-                    return new CategoriaUsuario(dados.id, dados.nome);
-                }
-    
-                return null;
-            } catch (err) {
-                console.error("Erro ao buscar categoria por ID:", err);
-                return null;
-            }
+    async encontrarCategoria(categoria: string): Promise<CategoriaUsuario | null> {
+        const query = `SELECT * FROM biblioteca.CategoriaUsuario WHERE nome = ?`;
+        const resultado = await executarComandoSQL(query, [categoria]);
+
+        if (resultado && resultado.length > 0) {
+            const row = resultado[0];
+            return new CategoriaUsuario(row.id, row.nome);
         }
+
+        return null;
+    }
 }

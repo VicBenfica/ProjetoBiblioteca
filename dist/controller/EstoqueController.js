@@ -1,105 +1,126 @@
 "use strict";
-// src/controller/EstoqueController.ts
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EstoqueController = void 0;
 const EstoqueService_1 = require("../service/EstoqueService");
-class EstoqueController {
-    estoqueService = new EstoqueService_1.EstoqueService();
-    // ALTERADO: de 'criarExemplar' para 'cadastrarExemplar'
-    // O corpo da requisição agora espera 'livro_isbn', 'quantidade', 'quantidade_emprestada' (opcional)
-    cadastrarExemplar(req, res) {
+const tsoa_1 = require("tsoa");
+const BasicResponseDto_1 = require("../model/dto/BasicResponseDto");
+const LivroDto_1 = require("../model/dto/LivroDto");
+let EstoqueController = class EstoqueController extends tsoa_1.Controller {
+    constructor() {
+        super(...arguments);
+        this.estoqueService = new EstoqueService_1.EstoqueService();
+    }
+    async adicionarLivroNoEstoque(dto, fail, success) {
         try {
-            const { livro_isbn, quantidade, quantidade_emprestada } = req.body; // Desestruturação para clareza
-            const estoque = this.estoqueService.cadastrarExemplar(livro_isbn, quantidade, quantidade_emprestada); // ALTERADO: chamada do service
-            res.status(201).json(estoque);
+            const livro = await this.estoqueService.cadastrarExemplar(dto.id, dto.isbn);
+            return success(200, new BasicResponseDto_1.BasicResponseDto("Livro adicionado com sucesso!", livro));
         }
-        catch (error) {
-            let message = "Não foi possível inserir exemplar!!";
-            if (error instanceof Error) {
-                message = error.message;
-            }
-            res.status(400).json({ message });
+        catch (err) {
+            return fail(400, new BasicResponseDto_1.BasicResponseDto(err.message, undefined));
         }
     }
-    // ALTERADO: Método para remover exemplar
-    removerExemplar(req, res) {
+    async listarEstoque(fail, success) {
         try {
-            const codigo = Number(req.params.codigo); // Pega 'codigo' da URL
-            if (isNaN(codigo) || !codigo) {
-                res.status(400).json({ message: "Código de exemplar inválido!" });
-                return;
-            }
-            this.estoqueService.removerExemplar(codigo); // ALTERADO: chamada do service
-            res.status(200).json({ message: "Exemplar removido com sucesso." });
+            const lista = await this.estoqueService.listarDisponiveis();
+            return success(202, new BasicResponseDto_1.BasicResponseDto("Lista do seu estoque: ", lista));
         }
-        catch (error) {
-            let message = "Erro ao remover o exemplar.";
-            if (error instanceof Error) {
-                message = error.message;
-            }
-            res.status(400).json({ message });
+        catch (err) {
+            return fail(400, new BasicResponseDto_1.BasicResponseDto(err.message, undefined));
         }
     }
-    // ALTERADO: Método para atualizar exemplar
-    atualizarNovoExemplar(req, res) {
+    async filtrarLivroNoEstoque(id, fail, success) {
         try {
-            const codigo = Number(req.params.codigo);
-            if (isNaN(codigo) || !codigo) {
-                res.status(400).json({ message: "Código de exemplar inválido!" });
-                return;
-            }
-            const novosDados = req.body;
-            const estoque = this.estoqueService.atualizarExemplar(codigo, novosDados); // ALTERADO: chamada do service
-            if (!estoque) {
-                res.status(404).json({ message: "Exemplar não encontrado para atualização!" });
-                return;
-            }
-            res.status(200).json(estoque); // Status correto: 200 OK
+            const resultado = await this.estoqueService.buscarExemplar(Number(id));
+            return success(200, new BasicResponseDto_1.BasicResponseDto("Livro no estoque foi encontrado com sucesso!", resultado));
         }
-        catch (error) {
-            let message = "Não foi possível atualizar o exemplar!!";
-            if (error instanceof Error) {
-                message = error.message;
-            }
-            res.status(400).json({ message });
+        catch (err) {
+            return fail(400, new BasicResponseDto_1.BasicResponseDto(err.message, undefined));
         }
     }
-    // ALTERADO: Método para detalhar exemplar
-    detalharNovoExemplar(req, res) {
+    async atualizarDisponibilidade(id, dto, fail, success) {
         try {
-            const codigo = Number(req.params.codigo); // Pega 'codigo' da URL
-            if (isNaN(codigo) || !codigo) {
-                res.status(400).json({ message: "Código de exemplar inválido!" });
-                return;
+            if (!dto.status) {
+                return fail(400, new BasicResponseDto_1.BasicResponseDto("Campo 'status' é obrigatório.", undefined));
             }
-            const estoque = this.estoqueService.buscarExemplar(codigo); // ALTERADO: chamada do service
-            if (!estoque) {
-                res.status(404).json({ message: "Exemplar não encontrado." });
-                return;
+            const disponibilidadeAtualizada = this.estoqueService.atualizarStatus(id, dto.status);
+            if (!disponibilidadeAtualizada) {
+                return fail(400, new BasicResponseDto_1.BasicResponseDto("Não foi possível atualizar o status, exemplar não encontrado.", undefined));
             }
-            res.status(200).json(estoque); // Status correto: 200 OK
+            return success(200, new BasicResponseDto_1.BasicResponseDto("Disponibilidade atualizada com sucesso!", disponibilidadeAtualizada));
         }
-        catch (error) {
-            let message = "Não foi possível detalhar o exemplar!!";
-            if (error instanceof Error) {
-                message = error.message;
-            }
-            res.status(400).json({ message });
+        catch (err) {
+            return fail(400, new BasicResponseDto_1.BasicResponseDto(err.message, undefined));
         }
     }
-    // ALTERADO: Método para listar exemplares
-    listar(req, res) {
+    async removerLivroNoEstoque(id, fail, success) {
         try {
-            const estoques = this.estoqueService.listarTodosExemplares(); // ALTERADO: chamar novo método
-            res.status(200).json(estoques); // Status correto: 200 OK
+            const livroRemovido = await this.estoqueService.removerExemplar(id);
+            return success(200, new BasicResponseDto_1.BasicResponseDto("Exemplar Deletado com sucesso em seu estoque!", livroRemovido));
         }
-        catch (error) {
-            let message = "Não foi possível listar!!";
-            if (error instanceof Error) {
-                message = error.message;
-            }
-            res.status(400).json({ message });
+        catch (err) {
+            return fail(400, new BasicResponseDto_1.BasicResponseDto(err.message, undefined));
         }
     }
-}
+};
 exports.EstoqueController = EstoqueController;
+__decorate([
+    (0, tsoa_1.Post)(),
+    __param(0, (0, tsoa_1.Body)()),
+    __param(1, (0, tsoa_1.Res)()),
+    __param(2, (0, tsoa_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [LivroDto_1.Livro, Function, Function]),
+    __metadata("design:returntype", Promise)
+], EstoqueController.prototype, "adicionarLivroNoEstoque", null);
+__decorate([
+    (0, tsoa_1.Get)(),
+    __param(0, (0, tsoa_1.Res)()),
+    __param(1, (0, tsoa_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Function, Function]),
+    __metadata("design:returntype", Promise)
+], EstoqueController.prototype, "listarEstoque", null);
+__decorate([
+    (0, tsoa_1.Get)("{id}"),
+    __param(0, (0, tsoa_1.Path)()),
+    __param(1, (0, tsoa_1.Res)()),
+    __param(2, (0, tsoa_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Function, Function]),
+    __metadata("design:returntype", Promise)
+], EstoqueController.prototype, "filtrarLivroNoEstoque", null);
+__decorate([
+    (0, tsoa_1.Put)("{id}"),
+    __param(0, (0, tsoa_1.Path)()),
+    __param(1, (0, tsoa_1.Body)()),
+    __param(2, (0, tsoa_1.Res)()),
+    __param(3, (0, tsoa_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object, Function, Function]),
+    __metadata("design:returntype", Promise)
+], EstoqueController.prototype, "atualizarDisponibilidade", null);
+__decorate([
+    (0, tsoa_1.Delete)("{id}"),
+    __param(0, (0, tsoa_1.Path)()),
+    __param(1, (0, tsoa_1.Res)()),
+    __param(2, (0, tsoa_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Function, Function]),
+    __metadata("design:returntype", Promise)
+], EstoqueController.prototype, "removerLivroNoEstoque", null);
+exports.EstoqueController = EstoqueController = __decorate([
+    (0, tsoa_1.Route)("estoque"),
+    (0, tsoa_1.Tags)("Estoque")
+], EstoqueController);

@@ -1,82 +1,147 @@
 "use strict";
-// src/service/UsuarioService.ts
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsuarioService = void 0;
-const Usuario_1 = require("../model/Usuario");
+const UsuarioEntity_1 = require("../model/entity/UsuarioEntity");
 const UsuarioRepository_1 = require("../repository/UsuarioRepository");
-const validador_1 = require("../utils/validador"); // Assumindo que este caminho está correto
+const CategoriaUsuarioService_1 = require("./CategoriaUsuarioService");
+const CategoriaCursoService_1 = require("./CategoriaCursoService");
+const EmprestimoRepository_1 = require("../repository/EmprestimoRepository");
 class UsuarioService {
-    usuarioRepository = UsuarioRepository_1.UsuarioRepository.getInstance();
-    idCounter = 1;
-    novoUsuario(data) {
-        // Validação de CPF
-        if (!validador_1.Validador.validarCPFCompleto(data.cpf)) {
-            throw new Error("CPF inválido.");
+    constructor() {
+        this.usuarioRepository = UsuarioRepository_1.UsuarioRepository.getInstance();
+        this.categoriaService = new CategoriaUsuarioService_1.CategoriaUsuarioService();
+        this.cursoService = new CategoriaCursoService_1.CursoService();
+        this.emprestimoRepository = EmprestimoRepository_1.EmprestimoRepository.getInstance();
+    }
+    cadastrarUsuario(usuarioData) {
+        const { cpf, nome, email, categoriaId, cursoId } = usuarioData;
+        if (!cpf || !nome || !email || !categoriaId) {
+            throw new Error("Informações incompletas");
         }
-        // Validação de campos obrigatórios
-        // Se email não está no construtor de Usuario, não deve ser obrigatório aqui.
-        // Se for para ter email, o Model Usuario precisa ser atualizado primeiro.
-        if (!data.nome || !data.cpf || data.categoria_id === undefined || data.curso_id === undefined) { // REMOVIDO: !data.email
-            throw new Error("Favor informar nome, cpf, categoria e curso."); // Mensagem ajustada
+        if (!UsuarioEntity_1.Usuario.validarCPF(cpf)) {
+            throw new Error("CPF inválido!");
         }
-        // Criação do usuário
-        // Certifique-se que o construtor do Usuario em Usuario.ts não espera 'email'
-        const usuario = new Usuario_1.Usuario(this.idCounter++, data.nome, data.cpf, 
-        // data.email, // REMOVIDO: Se não está no construtor do Model Usuario
-        data.categoria_id, // category_id aqui, não ativo
-        data.curso_id // curso_id aqui
-        );
-        // O status 'ativo' é definido dentro do construtor de Usuario, não precisa ser passado aqui.
-        this.usuarioRepository.insereUsuario(usuario);
+        if (this.usuarioRepository.buscarUsuarioPorCPF(cpf)) {
+            throw new Error("CPF já cadastrado!");
+        }
+        const categoria = this.categoriaService.buscarPorId(categoriaId);
+        if (!categoria) {
+            throw new Error("Categoria inválida!");
+        }
+        if (categoriaId !== 3) {
+            if (cursoId === undefined) {
+                throw new Error("Curso é obrigatório para alunos e professores.");
+            }
+            const curso = this.cursoService.buscarPorId(cursoId);
+            if (!curso) {
+                throw new Error("Curso inválido!");
+            }
+        }
+        const cursoFinal = categoriaId === 3 ? 0 : cursoId;
+        const novoUsuario = new UsuarioEntity_1.Usuario(cpf, nome, email, categoriaId, cursoFinal);
+        this.usuarioRepository.InserirUsuario(novoUsuario);
+        return novoUsuario;
+    }
+    listarUsuarioComFiltro(filtros) {
+        const { nome, status, categoriaId, cursoId } = filtros;
+        const usuarios = this.usuarioRepository.listarUsuarios();
+        return usuarios.filter((usuario) => {
+            const combinaNomes = nome ? usuario.nome.toLowerCase().includes(nome.toLowerCase()) : true;
+            const combinaStatus = status ? usuario.status === status : true;
+            const combinaCatId = categoriaId ? usuario.categoriaId === categoriaId : true;
+            const combinaCurId = cursoId ? usuario.cursoId === cursoId : true;
+            return combinaNomes && combinaStatus && combinaCatId && combinaCurId;
+        });
+    }
+    buscarUsuario(cpf) {
+        if (!UsuarioEntity_1.Usuario.validarCPF(cpf)) {
+            throw new Error("CPF inválido!");
+        }
+        const usuario = this.usuarioRepository.buscarUsuarioPorCPF(cpf);
+        if (!usuario) {
+            throw new Error("Usuário não encontrado!");
+        }
         return usuario;
     }
-    //remove apenas os usuarios que não tem emprestimos ativos
-    removeUsuarioPorCpf(cpf, emprestimos) {
-        const usuario = this.usuarioRepository.filtraUsuarioPorCpf(cpf);
-        if (!usuario)
-            return false;
-        // se n tiver retorna false
-        const possuiEmprestimosAtivos = emprestimos.some(e => e.usuario_id === usuario.id && !e.data_entrega); // se possuir emprestimo sem a data de entrega
-        //o item ainda não foi devolvido.
-        if (possuiEmprestimosAtivos)
-            return false;
-        // se tiver emprestimos ativos retona rfalse
-        const index = this.usuarioRepository.buscarIndexPorCpf(cpf);
-        if (index !== -1) {
-            //se encontrar a posiçao chamar a funçao p remover
-            this.usuarioRepository.removerPorIndex(index);
-            return true;
-        }
-        return false;
-    }
     atualizarUsuario(cpf, novosDados) {
-        const index = this.usuarioRepository.buscarIndexPorCpf(cpf);
-        if (index === -1)
-            return undefined;
-        // se n acha r a posição retoena indefined
-        const usuarioAtual = this.usuarioRepository.listarTodosUsuarios()[index];
-        //Pega o usuário original do array, com base no índice encontrado.
-        const usuarioAtualizado = {
-            id: novosDados.id ?? usuarioAtual.id,
-            nome: novosDados.nome ?? usuarioAtual.nome,
-            cpf: novosDados.cpf ?? usuarioAtual.cpf,
-            categoria_id: novosDados.categoria_id ?? usuarioAtual.categoria_id,
-            curso_id: novosDados.curso_id ?? usuarioAtual.curso_id,
-            ativo: novosDados.ativo ?? usuarioAtual.ativo,
-            diaSuspensao: novosDados.diaSuspensao ?? usuarioAtual.diaSuspensao,
-        };
-        // substirui o atigo pelo novo na msm posicao
-        this.usuarioRepository.atualizarUsuarioDiretamente(index, usuarioAtualizado);
+        const usuario = this.usuarioRepository.buscarUsuarioPorCPF(cpf);
+        if (!usuario) {
+            throw new Error("Usuário não encontrado!");
+        }
+        if (!novosDados.nome && !novosDados.email && !novosDados.categoriaId && !novosDados.cursoId) {
+            throw new Error("Nenhum dado informado para atualização.");
+        }
+        if (novosDados.cpf && novosDados.cpf !== cpf) {
+            throw new Error("Não é permitido alterar o CPF!");
+        }
+        if (novosDados.categoriaId) {
+            const categoria = this.categoriaService.buscarPorId(novosDados.categoriaId);
+            if (!categoria) {
+                throw new Error("Categoria inválida!");
+            }
+        }
+        if (novosDados.cursoId) {
+            const curso = this.cursoService.buscarPorId(novosDados.cursoId);
+            if (!curso) {
+                throw new Error("Curso inválido!");
+            }
+        }
+        const usuarioAtualizado = this.usuarioRepository.atualizarDadosUsuario(cpf, novosDados);
+        if (!usuarioAtualizado) {
+            throw new Error("Erro inesperado ao atualizar usuário!");
+        }
         return usuarioAtualizado;
     }
-    detalhesUsuario(cpf) {
-        return this.usuarioRepository.detalhesUsuarioPorCpf(cpf);
+    aplicarSuspensao(cpf, diasAtraso) {
+        const usuario = this.usuarioRepository.buscarUsuarioPorCPF(cpf);
+        if (!usuario)
+            return;
+        const diasSuspensao = diasAtraso * 3;
+        usuario.diaSuspensao = diasSuspensao;
+        if (diasSuspensao > 60) {
+            usuario.status = "suspenso";
+        }
+        const emprestimos = this.emprestimoRepository.listarPorUsuario(cpf);
+        const atrasados = emprestimos.filter((e) => e.diasAtraso && e.diasAtraso > 0);
+        if (atrasados.length > 2) {
+            usuario.status = "inativo";
+        }
     }
-    listar(id) {
-        return this.usuarioRepository.listarUsuarioPorId(id);
+    removerUsuario(cpf) {
+        if (!UsuarioEntity_1.Usuario.validarCPF(cpf)) {
+            throw new Error("CPF inválido!");
+        }
+        const usuario = this.usuarioRepository.buscarUsuarioPorCPF(cpf);
+        if (!usuario) {
+            throw new Error("Usuário não encontrado.");
+        }
+        const emprestimosAtivos = this.emprestimoRepository.emprestimosAbertos(cpf);
+        if (emprestimosAtivos.length > 0) {
+            throw new Error("Usuário não pode ser removido: possui empréstimos em aberto.");
+        }
+        const sucesso = this.usuarioRepository.removerUsuario(cpf);
+        if (!sucesso) {
+            throw new Error("Erro ao remover usuário.");
+        }
     }
-    listarTodos() {
-        return this.usuarioRepository.listarTodosUsuarios();
+    verificarInativacaoUsuario(cpf) {
+        const usuario = this.usuarioRepository.buscarUsuarioPorCPF(cpf);
+        if (!usuario)
+            return;
+        const emprestimos = this.emprestimoRepository.listarPorUsuario(cpf);
+        const hoje = new Date();
+        const atrasosGraves = emprestimos.filter((e) => {
+            if (!e.dataEntrega && e.dataDevolucao) {
+                const diff = hoje.getTime() - e.dataDevolucao.getTime();
+                const diasAtraso = diff / (1000 * 60 * 60 * 24);
+                return diasAtraso > 60;
+            }
+            return false;
+        });
+        if (atrasosGraves.length > 0) {
+            usuario.status = "inativo";
+            usuario.diaSuspensao = 0;
+        }
     }
 }
 exports.UsuarioService = UsuarioService;

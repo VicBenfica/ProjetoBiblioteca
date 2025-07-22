@@ -1,35 +1,121 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LivroRepository = void 0;
+const LivroEntity_1 = require("../model/entity/LivroEntity");
+const mysql_1 = require("../database/mysql");
 class LivroRepository {
-    static instance;
-    livros = [];
+    constructor() {
+        this.createTable();
+    }
     static getInstance() {
         if (!this.instance) {
             this.instance = new LivroRepository();
         }
         return this.instance;
     }
-    insereLivro(livro) {
-        this.livros.push(livro);
+    async createTable() {
+        const query = ` CREATE TABLE IF NOT EXISTS biblioteca.Livro (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            isbn VARCHAR(13) NOT NULL UNIQUE,
+            titulo VARCHAR(255) NOT NULL,
+            autor VARCHAR(255) NOT NULL,
+            editora VARCHAR(255) NOT NULL,
+            edicao VARCHAR(255) NOT NULL,
+            categoriaId INT NOT NULL
+            );`;
+        try {
+            const resultado = await (0, mysql_1.executarComandoSQL)(query, []);
+            console.log("Tabela Livro criada com sucesso:", resultado);
+        }
+        catch (err) {
+            console.error("Erro ao criar tabela Livro:", err);
+        }
     }
-    atualizarLivroPorIndex(index, livroAtualizado) {
-        this.livros[index] = livroAtualizado;
+    async insertLivro(livro) {
+        const query = `INSERT INTO biblioteca.Livro (isbn, titulo, autor, editora, edicao, categoriaId)
+                 VALUES (?, ?, ?, ?, ?, ?)`;
+        const valores = [livro.isbn, livro.titulo, livro.autor, livro.editora, livro.edicao, livro.categoriaId];
+        try {
+            await (0, mysql_1.executarComandoSQL)(query, valores);
+            return livro;
+        }
+        catch (err) {
+            console.error("Erro ao inserir livro:", err);
+            throw new Error("Erro ao cadastrar o livro no banco.");
+        }
     }
-    removerLivroPorIndex(index) {
-        this.livros.splice(index, 1);
+    async buscarLivroPorISBN(isbn) {
+        const query = "SELECT * FROM biblioteca.Livro WHERE isbn = ?";
+        try {
+            const resultado = await (0, mysql_1.executarComandoSQL)(query, [isbn]);
+            if (resultado.length > 0) {
+                const row = resultado[0];
+                const livro = new LivroEntity_1.LivroEntity(row.isbn, row.titulo, row.autor, row.editora, row.edicao, row.categoriaId, row.id);
+                return livro;
+            }
+            return undefined;
+        }
+        catch (err) {
+            console.error("Erro ao buscar livro no repositório: ", err);
+            throw err;
+        }
     }
-    listarLivros() {
-        return this.livros;
+    async buscarLivroPorAutorEditoraEdicao(autor, editora, edicao) {
+        try {
+            const resultado = await (0, mysql_1.executarComandoSQL)("SELECT * FROM biblioteca.Livro WHERE LOWER(autor) = LOWER(?) AND LOWER(editora) = LOWER(?) AND edicao = ?", [autor, editora, edicao]);
+            return resultado.map((row) => new LivroEntity_1.LivroEntity(row.isbn, row.titulo, row.autor, row.editora, row.edicao, row.categoriaId, row.id));
+        }
+        catch (err) {
+            console.error("Erro ao buscar livro no repositório: ", err);
+            throw err;
+        }
     }
-    buscarIndexPorId(id) {
-        return this.livros.findIndex(l => l.id === id);
+    async listarLivros() {
+        try {
+            const resultado = await (0, mysql_1.executarComandoSQL)("SELECT * FROM biblioteca.Livro", []);
+            return resultado.map((row) => new LivroEntity_1.LivroEntity(row.isbn, row.titulo, row.autor, row.editora, row.edicao, row.categoriaId, row.id));
+        }
+        catch (err) {
+            console.error("Erro listar livros no repositório: ", err);
+            throw err;
+        }
     }
-    buscarPorId(id) {
-        return this.livros.find(l => l.id === id);
-    } //Busca os detalhes 
-    buscarLivroPorIsbn(isbn) {
-        return this.livros.find(l => l.isbn === isbn);
+    async atualizarDadosLivro(livro) {
+        const query = `
+            UPDATE biblioteca.Livro
+            SET titulo = ?, autor = ?, editora = ?, edicao = ?, categoriaId = ?
+            WHERE isbn = ?`;
+        const params = [
+            livro.titulo,
+            livro.autor,
+            livro.editora,
+            livro.edicao,
+            livro.categoriaId,
+            livro.isbn
+        ];
+        console.log('Query de atualização:', query);
+        console.log('Parâmetros de atualização:', params);
+        try {
+            const resultado = await (0, mysql_1.executarComandoSQL)(query, params);
+            if (resultado.affectedRows > 0) {
+                return await this.buscarLivroPorISBN(livro.isbn);
+            }
+            return undefined;
+        }
+        catch (err) {
+            console.error("Erro ao atualizar dados do livro no repositório:", err);
+            throw err;
+        }
+    }
+    async removerLivro(isbn) {
+        try {
+            const resultado = await (0, mysql_1.executarComandoSQL)("DELETE FROM biblioteca.livro WHERE isbn = ?", [isbn]);
+            return resultado.affectedRows > 0;
+        }
+        catch (err) {
+            console.error("Erro ao remover livro no repositório:", err);
+            throw err;
+        }
     }
 }
 exports.LivroRepository = LivroRepository;

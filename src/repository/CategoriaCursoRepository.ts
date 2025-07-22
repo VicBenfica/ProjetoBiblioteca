@@ -8,6 +8,7 @@ export class CategoriaCursoRepository {
 
     private constructor() {
         this.criarTable();
+        
     }
 
     public static getInstance() {
@@ -52,38 +53,29 @@ export class CategoriaCursoRepository {
 
 
     public async listarCategorias(): Promise<CategoriaCurso[]> {
+        const resultado = await executarComandoSQL("SELECT * FROM biblioteca.CategoriaCurso", []);
         const categorias: CategoriaCurso[] = [];
 
-        try {
-            const resultado = await executarComandoSQL("SELECT * FROM biblioteca.CategoriaCurso", []);
-
+        if(resultado && resultado.length > 0){
             for (let i = 0; i < resultado.length; i++) {
-                const dados = resultado[i];
-                const categoria = new CategoriaCurso(dados.id, dados.nome);
-                categorias.push(categoria);
-            }
-            return categorias;
-        } catch (err) {
-            console.error('Erro ao listar categorias:', err);
-            return [];
+                const row = resultado[i];
+                categorias.push(new CategoriaCurso(row.id, row.nome));
+            } 
         }
+
+        return categorias;
     }
 
-     public async buscarPorId(id: number): Promise<CategoriaCurso | null> {
-            const query = `SELECT * FROM biblioteca.CategoriaLivro WHERE id = ?`;
-            try {
-                const resultado = await executarComandoSQL(query, [id]);
+     public async encontrarCategoria(categoria: string): Promise<CategoriaCurso | null> {
+            const query = `SELECT * FROM biblioteca.CategoriaCurso WHERE nome = ?`;
+            const resultado = await executarComandoSQL(query, [categoria]);
     
-                if (resultado && resultado.length > 0) {
-                    const dados = resultado[0];
-                    return new CategoriaCurso(dados.id, dados.nome);
-                }
-    
-                return null;
-            } catch (err) {
-                console.error("Erro ao buscar categoria por ID:", err);
-                return null;
+            if (resultado && resultado.length > 0) {
+                const row = resultado[0];
+                return new CategoriaCurso(row.id, row.nome);
             }
+    
+            return null;
         }
 
 

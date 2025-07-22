@@ -16,15 +16,16 @@ export class LivroRepository {
     }
 
     private async createTable() {
-        const query = ` CREATE TABLE IF NOT EXISTS biblioteca.Livro (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            isbn VARCHAR(13) NOT NULL UNIQUE,
-            titulo VARCHAR(255) NOT NULL,
-            autor VARCHAR(255) NOT NULL,
-            editora VARCHAR(255) NOT NULL,
-            edicao VARCHAR(255) NOT NULL,
-            categoriaId INT NOT NULL
-            );`;
+        const query = `CREATE TABLE IF NOT EXISTS biblioteca.Livro(
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                titulo VARCHAR(255) NOT NULL,
+                isbn VARCHAR(13) NOT NULL UNIQUE,
+                autor VARCHAR(255) NOT NULL,
+                editora VARCHAR(255) NOT NULL,
+                edicao VARCHAR(255) NOT NULL,
+                categoria VARCHAR(255) NOT NULL,
+                status VARCHAR(15) NOT NULL
+                )`
         try {
             const resultado = await executarComandoSQL(query, []);
             console.log("Tabela Livro criada com sucesso:", resultado);
@@ -33,124 +34,135 @@ export class LivroRepository {
         }
     }
 
-    public async insertLivro(livro: LivroEntity): Promise<LivroEntity> {
-        const query = `INSERT INTO biblioteca.Livro (isbn, titulo, autor, editora, edicao, categoriaId)
-                 VALUES (?, ?, ?, ?, ?, ?)`;
+    async insereLivro(livro: LivroEntity): Promise<LivroEntity>{
+        const resultado = await executarComandoSQL(
+            "INSERT INTO biblioteca.Livro (titulo, isbn, autor, editora, edicao, categoria, status) values (?,?,?,?,?,?,?)",
+            [
+                livro.titulo, 
+                livro.isbn,
+                livro.autor,
+                livro.editora,
+                livro.edicao,
+                livro.categoria,
+                'disponivel'
+            ]);
+        
+            console.log("Livro criado com Sucesso: ", resultado);
 
-        const valores = [livro.isbn, livro.titulo, livro.autor, livro.editora, livro.edicao, livro.categoriaId];
-
-        try {
-            await executarComandoSQL(query, valores);
-            return livro;
-        } catch (err) {
-            console.error("Erro ao inserir livro:", err);
-            throw new Error("Erro ao cadastrar o livro no banco.");
-        }
-    }
-
-
-    async buscarLivroPorISBN(isbn: string): Promise<LivroEntity | undefined> {
-        const query = "SELECT * FROM biblioteca.Livro WHERE isbn = ?";
-        try {
-            const resultado = await executarComandoSQL(query, [isbn]);
-            if (resultado.length > 0) {
-                const row = resultado[0];
-                const livro = new LivroEntity(
-                    row.isbn,
-                    row.titulo,
-                    row.autor,
-                    row.editora,
-                    row.edicao,
-                    row.categoriaId,
-                    row.id
-                );
-                return livro;
-            }
-            return undefined;
-        } catch (err) {
-            console.error("Erro ao buscar livro no repositório: ", err);
-            throw err;
-        }
-    }
-
-    async buscarLivroPorAutorEditoraEdicao(autor: string, editora: string, edicao: string): Promise<LivroEntity[]> {
-        try {
-            const resultado = await executarComandoSQL("SELECT * FROM biblioteca.Livro WHERE LOWER(autor) = LOWER(?) AND LOWER(editora) = LOWER(?) AND edicao = ?",
-                [autor, editora, edicao]
-            );
-            return resultado.map((row: any) => new LivroEntity(
-                row.isbn,
-                row.titulo,
-                row.autor,
-                row.editora,
-                row.edicao,
-                row.categoriaId,
-                row.id
-            ));
-        } catch (err) {
-            console.error("Erro ao buscar livro no repositório: ", err);
-            throw err;
-        }
-    }
-
-    async listarLivros(): Promise<LivroEntity[]> {
-        try {
-            const resultado = await executarComandoSQL("SELECT * FROM biblioteca.Livro", []);
-            return resultado.map((row: any) => new LivroEntity(
-                row.isbn,
-                row.titulo,
-                row.autor,
-                row.editora,
-                row.edicao,
-                row.categoriaId,
-                row.id
-            ));
-        } catch (err) {
-            console.error("Erro listar livros no repositório: ", err);
-            throw err;
-        }
-    }
-
-    async atualizarDadosLivro(livro: LivroEntity): Promise<LivroEntity | undefined> {
-        const query = `
-            UPDATE biblioteca.Livro
-            SET titulo = ?, autor = ?, editora = ?, edicao = ?, categoriaId = ?
-            WHERE isbn = ?`;
-
-        const params = [
+        return new LivroEntity(
+            resultado.insertId,
             livro.titulo,
+            livro.isbn,
             livro.autor,
             livro.editora,
             livro.edicao,
-            livro.categoriaId,
-            livro.isbn
-        ];
-
-        console.log('Query de atualização:', query);
-        console.log('Parâmetros de atualização:', params);
-
-        try {
-            const resultado: any = await executarComandoSQL(query, params);
-            if (resultado.affectedRows > 0) {
-                return await this.buscarLivroPorISBN(livro.isbn);
-            }
-            return undefined;
-        } catch (err) {
-            console.error("Erro ao atualizar dados do livro no repositório:", err);
-            throw err;
-        }
+            livro.categoria,
+            'disponivel'
+        );
+    }
+    
+    validacaoISBN(isbn: string): boolean {
+        return isbn.toString().length === 13;
     }
 
-    async removerLivro(isbn: string): Promise<boolean> {
-        try {
-            const resultado = await executarComandoSQL("DELETE FROM biblioteca.livro WHERE isbn = ?",
-                [isbn]
+    async filtraLivroPorISBN(isbn: string): Promise<LivroEntity | null>{
+        const resultado = await executarComandoSQL("SELECT * FROM biblioteca.Livro WHERE isbn = ?", [isbn]);
+        if(resultado && resultado.length > 0) {
+            const user = resultado[0];
+            return new LivroEntity(
+                user.id,
+                user.titulo,
+                user.isbn,
+                user.autor,
+                user.editora,
+                user.edicao, 
+                user.categoria,
+                user.status
             );
-            return resultado.affectedRows > 0;
-        } catch (err) {
-            console.error("Erro ao remover livro no repositório:", err);
-            throw err;
         }
+        return null;
     }
 
+    async validacaoLivro(isbn: string): Promise<boolean> {
+        const livro = await this.filtraLivroPorISBN(isbn);
+        return livro !== null;
+    }
+
+    async removeLivroPorISBN(isbn: string): Promise<LivroEntity | null>{
+       const livro = await this.filtraLivroPorISBN(isbn);
+       if(!livro){
+            return null;
+       }
+
+       await executarComandoSQL("DELETE FROM biblioteca.Livro where isbn = ?", [isbn]);
+       return livro;
+    }
+
+    async atualizarLivroPorISBN(isbn: string, novosDados: any): Promise<LivroEntity | null>{
+        const campos: string[] = [];
+        const valores: any[] = [];
+
+        if(novosDados.titulo){
+            campos.push("titulo = ?");
+            valores.push(novosDados.titulo);
+        }
+
+        if(novosDados.autor){
+            campos.push("autor = ?");
+            valores.push(novosDados.autor);
+        }
+
+        if(novosDados.editora){
+            campos.push("editora = ?");
+            valores.push(novosDados.editora);
+        }
+
+        if(novosDados.edicao){
+            campos.push("edicao = ?");
+            valores.push(novosDados.edicao);
+        }
+
+        if(novosDados.categoria){
+            campos.push("categoria = ?");
+            valores.push(novosDados.categoria);
+        }
+
+        if(novosDados.status){
+            campos.push("status = ?");
+            valores.push(novosDados.status);
+        }
+
+        if (campos.length === 0) {
+            return await this.filtraLivroPorISBN(isbn);
+        }
+
+        const sql = `UPDATE biblioteca.Livro SET ${campos.join(", ")} WHERE isbn = ?`;
+        valores.push(isbn);
+
+        const resultado = await executarComandoSQL(sql, valores);
+        console.log(resultado);
+
+        return await this.filtraLivroPorISBN(isbn);
+    }
+
+    async listarLivros(): Promise<LivroEntity[]>{
+        const resultado = await executarComandoSQL("SELECT * FROM biblioteca.Livro", []);
+        const livros: LivroEntity[] = [];
+        if(resultado && resultado.length > 0){
+            for(let i = 0; i < resultado.length; i++){
+                const user = resultado[i];
+                livros.push(new LivroEntity(
+                    user.id,
+                    user.titulo,
+                    user.isbn,
+                    user.autor,
+                    user.editora,
+                    user.edicao, 
+                    user.categoria,
+                    user.status
+                ));
+            }
+        }
+        return livros;
+    }
 }

@@ -1,29 +1,48 @@
 "use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CategoriaLivroController = void 0;
 const CategoriaLivroService_1 = require("../service/CategoriaLivroService");
-class CategoriaLivroController {
-    categoriaLivroService = new CategoriaLivroService_1.CategoriaLivroService();
-    //cria um objeto da classe categoria LivroService, com isso ele pode acessar os metodos de serviço
-    listar(req, res) {
-        //get
+const tsoa_1 = require("tsoa");
+const BasicResponseDto_1 = require("../model/dto/BasicResponseDto");
+//importação para o DTO
+let CategoriaLivroController = class CategoriaLivroController {
+    constructor() {
+        this.categoriaLivroService = new CategoriaLivroService_1.CategoriaLivroService();
+    }
+    async listarCategoriaLivro(fail, success) {
         try {
-            const categoria = this.categoriaLivroService.listarLivros();
-            // a constante categoria chama o metodo listarLivros que lista os livros
-            res.status(200).json(categoria);
-            // se der certo mostra 201
+            const lista = await this.categoriaLivroService.listarCategorias();
+            return success(200, new BasicResponseDto_1.BasicResponseDto("Categorias de Livro Disponiveis", lista));
         }
-        catch (error) {
-            let message = "Não foi possível listar!!";
-            if (error instanceof Error) {
-                message = error.message;
-                //se tiver alguma instancia de erro, mostra
-            }
-            res.status(400).json({
-                message: message
-                //se não, mostra a mensagem
-            });
+        catch (err) {
+            return fail(400, new BasicResponseDto_1.BasicResponseDto(err.message, undefined));
         }
     }
-}
+};
 exports.CategoriaLivroController = CategoriaLivroController;
+__decorate([
+    (0, tsoa_1.Get)(),
+    __param(0, (0, tsoa_1.Res)()),
+    __param(1, (0, tsoa_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Function, Function]),
+    __metadata("design:returntype", Promise)
+], CategoriaLivroController.prototype, "listarCategoriaLivro", null);
+exports.CategoriaLivroController = CategoriaLivroController = __decorate([
+    (0, tsoa_1.Route)("categoria-livros")
+    //Define as rotas
+    ,
+    (0, tsoa_1.Tags)("Categoria de Livro")
+], CategoriaLivroController);
