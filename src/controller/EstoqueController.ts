@@ -4,7 +4,7 @@ import { Request, Response } from "express";
 export class EstoqueController{
     private estoqueService = new EstoqueService();
 
-    adicionarLivroNoEstoque(req: Request, res: Response): void{
+    adicionarLivroEstoque(req: Request, res: Response): void{
         try{
             const livro = this.estoqueService.novoLivronoEstoque(req.body);
             res.status(201).json({

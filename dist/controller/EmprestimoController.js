@@ -2,23 +2,18 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmprestimoController = void 0;
 const EmprestimoService_1 = require("../service/EmprestimoService");
-//Importa o Service e Repository
 class EmprestimoController {
     emprestimoService = new EmprestimoService_1.EmprestimoService();
-    //faz uma intancia, objeto da classe Empretimo service
-    criarEmprestimo(req, res) {
+    novoEmprestimo(req, res) {
         try {
-            const cpf = String(req.body.cpf);
-            //receb o cpf 
-            const estoque_id = Number(req.body.estoque_id);
-            //recebe o id do estoque
-            const emprestimo = this.emprestimoService.registrarEmprestimoPorCpf(cpf, estoque_id);
-            //cria uma contante que recebe o metodo registrarEmprestimo por cpf
-            res.status(201).json(emprestimo);
-            //retorna um novo objeto de emprestimo em \JSON
+            const emprestimo = this.emprestimoService.novoEmprestimo(req.body);
+            res.status(200).json({
+                "message": "Emprestimo realizado com Sucesso! :)",
+                "emprestimo": emprestimo
+            });
         }
         catch (error) {
-            let message = "Não foi possível registrar Emprestimo!!";
+            let message = "Não foi possivel realizar o emprestimo!";
             if (error instanceof Error) {
                 message = error.message;
             }
@@ -27,27 +22,55 @@ class EmprestimoController {
             });
         }
     }
-    CriarDevolucao(req, res) {
+    listarEmprestimos(req, res) {
         try {
-            const id = Number(req.params.id);
-            const emprestimo = this.emprestimoService.registrarDevolucao(id);
-            res.status(201).json(emprestimo);
+            const lista = this.emprestimoService.listarEmprestimos();
+            const ativos = this.emprestimoService.listarEmprestimosAtivos();
+            res.status(200).json({
+                "message": "Emprestimos Ativos",
+                "emprestimos": ativos,
+                "historico": "Histórico de Emprestimo",
+                "lista": lista
+            });
         }
         catch (error) {
-            let message = "Não foi possível registrar Devolução!!";
+            let message = "Não conseguimos realizar a listagem dos emprestimos feitos!";
             if (error instanceof Error) {
                 message = error.message;
             }
-            res.status(400).json({ message });
+            res.status(400).json({
+                message: message
+            });
         }
     }
-    listar(req, res) {
+    filtraEmprestimoPorID(req, res) {
         try {
-            const emprestimo = this.emprestimoService.listar();
-            res.status(201).json(emprestimo);
+            const emprestimo = this.emprestimoService.filtrarEmprestimoPorID({ id: Number(req.params.id) });
+            res.status(200).json(emprestimo);
         }
         catch (error) {
-            let message = "Não foi possível listar!!";
+            let message = "Não existe esse emprestimo em nosso cadastro, por favor cadastre um emprestimo";
+            if (error instanceof Error) {
+                message = error.message;
+            }
+            res.status(400).json({
+                message: message
+            });
+        }
+    }
+    registrarDevolucao(req, res) {
+        try {
+            const devolucao = this.emprestimoService.registrarDevolucao({
+                id: Number(req.params.id),
+                novoStatus: "devolvido"
+            });
+            res.status(200).json({
+                "message": "Devolução concluida com sucesso!",
+                "devolução": devolucao
+            });
+        }
+        catch (error) {
+            let message = "Não foi possivel realizar a devolução!";
             if (error instanceof Error) {
                 message = error.message;
             }

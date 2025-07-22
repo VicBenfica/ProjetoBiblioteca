@@ -1,25 +1,96 @@
 "use strict";
-// src/model/Emprestimo.ts
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Emprestimo = void 0;
 class Emprestimo {
+    static proximoId = 1;
+    static ultimoId = 0;
     id;
-    usuario_id;
-    estoque_codigo;
-    data_emprestimo;
-    data_devolucao;
-    data_entrega;
-    suspensao_ate;
-    dias_atraso;
-    constructor(id, usuario_id, estoque_codigo, data_emprestimo, data_devolucao, data_entrega, dias_atraso, suspensao_ate) {
-        this.id = id;
-        this.usuario_id = usuario_id;
-        this.estoque_codigo = estoque_codigo; // ATRIBUIÇÃO ALTERADA
-        this.data_emprestimo = data_emprestimo;
-        this.data_devolucao = data_devolucao;
-        this.data_entrega = data_entrega;
-        this.dias_atraso = dias_atraso;
-        this.suspensao_ate = suspensao_ate;
+    usuario;
+    codExemplar;
+    categoria;
+    dataEmprestimo;
+    dataDevolucao;
+    dataPrevista;
+    diasRestantes;
+    status;
+    multaAtrasado;
+    diasSuspensao;
+    constructor(usuario, codExemplar, categoria) {
+        if (!usuario || !codExemplar || !categoria) {
+            throw new Error("Por favor informar todos os campos");
+        }
+        this.id = this.gerarId();
+        this.usuario = usuario;
+        this.codExemplar = codExemplar;
+        this.categoria = categoria;
+        this.dataEmprestimo = new Date();
+        this.dataPrevista = this.calcularDataDevolucao();
+        this.diasRestantes = this.diasRestantesEmprestimo();
+        this.dataDevolucao = null;
+        this.status = 'ativo';
+        this.multaAtrasado = this.calcularDiasAtraso();
+        this.diasSuspensao = this.calcularDiasSuspensao();
+    }
+    calcularDataDevolucao() {
+        const dataPrevista = new Date(this.dataEmprestimo);
+        let diasEmprestimo;
+        if (this.categoria === 'professor') {
+            diasEmprestimo = 40;
+        }
+        else {
+            diasEmprestimo = 15;
+        }
+        dataPrevista.setDate(this.dataEmprestimo.getDate() + diasEmprestimo);
+        return dataPrevista;
+    }
+    calcularDiasAtraso() {
+        if (this.status != 'devolvido' || !this.dataDevolucao) {
+            const hoje = new Date();
+            if (hoje > this.dataPrevista) {
+                const diferencaTime = hoje.getTime() - this.dataPrevista.getTime();
+                return Math.floor(diferencaTime / (1000 * 60 * 60 * 24));
+            }
+            return 0;
+        }
+        const diferencaTime = this.dataDevolucao.getTime() - this.dataPrevista.getTime();
+        const diferencaDias = Math.floor(diferencaTime / (1000 * 60 * 60 * 24));
+        if (diferencaDias > 0) {
+            return diferencaDias;
+        }
+        else {
+            return 0;
+        }
+    }
+    calcularDiasSuspensao() {
+        const diasAtraso = this.calcularDiasAtraso();
+        this.diasSuspensao = diasAtraso * 3;
+        return this.diasSuspensao;
+    }
+    finalizarEmprestimo() {
+        this.dataDevolucao = new Date();
+        this.status = 'devolvido';
+        this.calcularDiasSuspensao();
+    }
+    estaAtrasado() {
+        return this.calcularDiasAtraso() > 0;
+    }
+    diasRestantesEmprestimo() {
+        if (this.status === 'devolvido') {
+            return 0;
+        }
+        const hoje = new Date();
+        const diferencaTime = this.dataPrevista.getTime() - hoje.getTime();
+        const diferencaDias = Math.floor(diferencaTime / (1000 * 60 * 60 * 24));
+        if (diferencaDias > 0) {
+            return diferencaDias;
+        }
+        else {
+            return 0;
+        }
+    }
+    gerarId() {
+        Emprestimo.ultimoId++;
+        return Emprestimo.ultimoId;
     }
 }
 exports.Emprestimo = Emprestimo;

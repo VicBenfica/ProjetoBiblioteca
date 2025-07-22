@@ -4,30 +4,24 @@ exports.CategoriaUsuarioRepository = void 0;
 const CategoriaUsuario_1 = require("../model/CategoriaUsuario");
 class CategoriaUsuarioRepository {
     static instance;
-    categoriaUsuarios = [];
-    //armazena todas as categorias em um array
-    idCounter = 1;
-    //usado para gerar id unicos, nesse cod n é usado mas em outros sim
-    constructor() { }
+    categorias = [];
+    constructor() {
+        this.categorias.push(new CategoriaUsuario_1.CategoriaUsuario("Aluno"));
+        this.categorias.push(new CategoriaUsuario_1.CategoriaUsuario("Professor"));
+        this.categorias.push(new CategoriaUsuario_1.CategoriaUsuario("Bibliotecario"));
+    }
+    ;
     static getInstance() {
         if (!this.instance) {
             this.instance = new CategoriaUsuarioRepository();
-        } //ve se exisite uma instanci, se não, ceia e retorna
+        }
         return this.instance;
     }
-    popularMock() {
-        this.categoriaUsuarios = [
-            new CategoriaUsuario_1.CategoriaUsuario(1, "aluno"),
-            new CategoriaUsuario_1.CategoriaUsuario(2, "professor"),
-            new CategoriaUsuario_1.CategoriaUsuario(3, "bibliotecario")
-        ];
-        console.log("Usuarios Mock populados:", this.categoriaUsuarios);
+    listarCategoria() {
+        return this.categorias;
     }
-    listarUsuarios() {
-        return this.categoriaUsuarios;
-    }
-    buscarPorId(id) {
-        return this.categoriaUsuarios.find(c => c.id === id);
+    encontrarCategoria(cat) {
+        return this.categorias.find(categoria => categoria.nome === cat);
     }
 }
 exports.CategoriaUsuarioRepository = CategoriaUsuarioRepository;

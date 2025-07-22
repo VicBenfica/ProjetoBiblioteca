@@ -4,7 +4,7 @@ import { Request, Response } from "express";
 export class CategoriaUsuarioController{
     private categoriaUsuarioService = new CategoriaUsuarioService();
 
-    listarCategoria(req: Request, res: Response): void{
+    listarCategoriaUsuario(req: Request, res: Response): void{
         try{
             const lista = this.categoriaUsuarioService.listarCategorias();
             res.status(200).json(lista);

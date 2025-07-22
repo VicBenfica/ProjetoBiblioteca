@@ -2,22 +2,24 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Livro = void 0;
 class Livro {
-    id;
     titulo;
+    isbn;
     autor;
     editora;
     edicao;
-    isbn;
-    categoria_id;
-    //liga com categoria Livro
-    constructor(id, titulo, autor, editora, edicao, isbn, categoria_id) {
-        this.id = id;
+    categoria;
+    status;
+    constructor(titulo, isbn, autor, editora, edicao, categoria) {
+        if (!titulo || !isbn || !autor || !editora || !edicao || !categoria) {
+            throw new Error("Por favor informar todos os campos");
+        }
         this.titulo = titulo;
+        this.isbn = isbn;
         this.autor = autor;
         this.editora = editora;
         this.edicao = edicao;
-        this.isbn = isbn;
-        this.categoria_id = categoria_id;
+        this.categoria = categoria;
+        this.status = 'disponivel';
     }
 }
 exports.Livro = Livro;

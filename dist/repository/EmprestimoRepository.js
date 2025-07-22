@@ -4,7 +4,6 @@ exports.EmprestimoRepository = void 0;
 class EmprestimoRepository {
     static instance;
     emprestimos = [];
-    idCounter = 1;
     constructor() { }
     static getInstance() {
         if (!this.instance) {
@@ -12,30 +11,50 @@ class EmprestimoRepository {
         }
         return this.instance;
     }
-    gerarNovoId() {
-        return this.idCounter++;
-        //usa o id para gerar novos ids
+    insereEmprestimo(emprestimo) {
+        this.emprestimos.push(emprestimo);
     }
-    //Listar
     listarEmprestimos() {
         return this.emprestimos;
     }
-    buscarPorId(id) {
-        return this.emprestimos.find(e => e.id === id);
+    filtraEmprestimoPorID(id) {
+        return this.emprestimos.find(emprestimo => emprestimo.id === id);
     }
-    //Registrar
-    salvarEmprestimo(emprestimo) {
-        this.emprestimos.push(emprestimo);
+    filtraEmprestimosAtivosDoUsuario(usuario) {
+        return this.emprestimos.filter(emprestimo => emprestimo.usuario === usuario && emprestimo.status === 'ativo');
     }
-    //Registrar devolucao
-    atualizarEmprestimo(emprestimo) {
-        const index = this.emprestimos.findIndex(e => e.id === emprestimo.id);
-        //posição dentro do array que qr atualizar
-        if (index !== -1) {
-            //Se achou, quando não acha é -1
-            this.emprestimos[index] = emprestimo;
-            //substitui pelo novo emprestimo
+    filtraEmprestimosAtrasadosDoUsuario(cpf) {
+        return this.emprestimos.filter(emprestimo => emprestimo.usuario === cpf && emprestimo.status === 'ativo' && emprestimo.estaAtrasado());
+    }
+    emprestimosAtivosDoUsuario(cpf) {
+        return this.filtraEmprestimosAtivosDoUsuario(cpf).length;
+    }
+    verificarUsuarioSuspenso(cpf) {
+        const emprestimosAtrasados = this.filtraEmprestimosAtrasadosDoUsuario(cpf);
+        return emprestimosAtrasados.some(emprestimo => emprestimo.calcularDiasAtraso() > 60);
+    }
+    atualizarStatusEmprestimo(id, novoStatus) {
+        const emprestimo = this.filtraEmprestimoPorID(id);
+        if (emprestimo) {
+            emprestimo.status = novoStatus;
+            if (novoStatus === 'devolvido') {
+                emprestimo.finalizarEmprestimo();
+            }
         }
+    }
+    verificarLimiteEmprestimo(cpf, categoria) {
+        const emprestimosAtivos = this.emprestimosAtivosDoUsuario(cpf);
+        let limiteEmprestimos = 0;
+        if (categoria === 'professor') {
+            limiteEmprestimos = 5;
+        }
+        else {
+            limiteEmprestimos = 3;
+        }
+        return emprestimosAtivos < limiteEmprestimos;
+    }
+    listarEmprestimosAtivos() {
+        return this.emprestimos.filter(emprestimo => emprestimo.status === 'ativo');
     }
 }
 exports.EmprestimoRepository = EmprestimoRepository;

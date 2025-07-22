@@ -1,16 +1,17 @@
 
-import { CursoService } from "../service/CategoriaCursoService";
+import { CategoriaLivroService } from "../service/CategoriaLivroService";
 import { Request, Response } from "express";
+import { LivroService } from "../service/LivroService";
 
-export class CategoriaCursoController{
-    private categoriaCursoService = new CursoService();
+export class CategoriaLivroController{
+    private categoriaLivroService = new LivroService();
 
-    listarCurso(req: Request, res: Response): void{
+    listarLivro(req: Request, res: Response): void{
         try{
-            const lista = this.categoriaCursoService.listarCursos();
+            const lista = this.categoriaLivroService.listarLivros();
             res.status(200).json(lista);
         } catch(error: unknown){
-           let message = "Não conseguimos realizar a listagem de cursos";
+           let message = "Não conseguimos realizar a listagem de livros";
             if(error instanceof Error){
                 message = error.message;
             }
