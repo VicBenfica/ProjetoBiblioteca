@@ -6,8 +6,8 @@ class CategoriaLivroService {
     constructor() {
         this.categoriaLivroRepository = CategoriaLivroRepository_1.CategoriaLivroRepository.getInstance();
     }
-    async listarCategoriaLivro() {
-        return await this.categoriaLivroRepository.listarCategoriasLivro();
+    listarLivros() {
+        return this.categoriaLivroRepository.listarCategoriasLivro();
     }
 }
 exports.CategoriaLivroService = CategoriaLivroService;

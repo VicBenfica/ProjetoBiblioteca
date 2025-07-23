@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "dependencies": {
+    "@types/express": "^5.0.2",
     "acorn": "^8.14.1",
     "acorn-walk": "^8.3.4",
     "arg": "^4.1.3",
@@ -11,7 +12,6 @@
     "express": "^5.1.0",
     "make-error": "^1.3.6",
     "mysql2": "^3.14.1",
-    "swagger-ui-express": "^5.0.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2",
     "undici-types": "^6.20.0",
@@ -20,7 +20,7 @@
   },
   "scripts": {
     "start": "node dist/app.js",
-    "build": "npx tsc",
+    "build": "npx tsoa spec && npx tsoa routes && tsc",
     "dev": "ts-node src/app.ts"
   },
   "repository": {
@@ -34,11 +34,5 @@
     "url": "https://github.com/VicBenfica/ProjetoBiblioteca/issues"
   },
   "homepage": "https://github.com/VicBenfica/ProjetoBiblioteca#readme",
-  "description": "",
-  "devDependencies": {
-    "@types/express": "^5.0.3",
-    "@types/swagger-jsdoc": "^6.0.4",
-    "@types/swagger-ui-express": "^4.1.8",
-    "tsoa": "^6.6.0"
-  }
+  "description": ""
 }

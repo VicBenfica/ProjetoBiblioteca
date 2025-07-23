@@ -14,14 +14,14 @@ class EmprestimoEntity {
         this.dataPrevista = this.calcularDataDevolucao();
         this.diasRestantes = this.diasRestantesEmprestimo();
         this.dataDevolucao = null;
-        this.status = 'ativo';
+        this.status = "ativo";
         this.multaAtrasado = this.calcularDiasAtraso();
         this.diasSuspensao = this.calcularDiasSuspensao();
     }
     calcularDataDevolucao() {
         const dataPrevista = new Date(this.dataEmprestimo);
         let diasEmprestimo;
-        if (this.categoria === 'professor') {
+        if (this.categoria === "professor") {
             diasEmprestimo = 40;
         }
         else {
@@ -31,7 +31,7 @@ class EmprestimoEntity {
         return dataPrevista;
     }
     calcularDiasAtraso() {
-        if (this.status != 'devolvido' || !this.dataDevolucao) {
+        if (this.status != "devolvido" || !this.dataDevolucao) {
             const hoje = new Date();
             if (hoje > this.dataPrevista) {
                 const diferencaTime = hoje.getTime() - this.dataPrevista.getTime();
@@ -55,14 +55,14 @@ class EmprestimoEntity {
     }
     finalizarEmprestimo() {
         this.dataDevolucao = new Date();
-        this.status = 'devolvido';
+        this.status = "devolvido";
         this.calcularDiasSuspensao();
     }
     estaAtrasado() {
         return this.calcularDiasAtraso() > 0;
     }
     diasRestantesEmprestimo() {
-        if (this.status === 'devolvido') {
+        if (this.status === "devolvido") {
             return 0;
         }
         const hoje = new Date();

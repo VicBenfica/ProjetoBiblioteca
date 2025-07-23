@@ -10,7 +10,7 @@ class EstoqueEntity {
         this.isbn = isbn;
         this.quantidade = quantidade;
         this.quantidade_emprestada = quantidade_emprestada || 0;
-        this.disponibilidade = 'disponivel';
+        this.disponibilidade = "disponivel";
     }
 }
 exports.EstoqueEntity = EstoqueEntity;

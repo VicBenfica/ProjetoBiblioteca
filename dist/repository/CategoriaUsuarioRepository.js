@@ -10,6 +10,7 @@ class CategoriaUsuarioRepository {
     static getInstance() {
         if (!this.instance) {
             this.instance = new CategoriaUsuarioRepository;
+            this.inserirCategoriasPadrao();
         }
         return this.instance;
     }

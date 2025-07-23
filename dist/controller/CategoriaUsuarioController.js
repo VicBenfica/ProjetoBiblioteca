@@ -24,7 +24,7 @@ let CategoriaUsuarioController = class CategoriaUsuarioController extends tsoa_1
     }
     async listarCategoria(fail, success) {
         try {
-            const lista = await this.categoriaUsuarioService.listarCategorias();
+            const lista = await this.categoriaUsuarioService.listarUsuarios();
             return success(201, new BasicResponseDto_1.BasicResponseDto("Lista de Categorias de Usuário: ", lista));
         }
         catch (err) {

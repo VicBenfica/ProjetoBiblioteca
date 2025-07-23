@@ -5,7 +5,6 @@ const mysql_1 = require("../database/mysql");
 const EstoqueEntity_1 = require("../model/entity/EstoqueEntity");
 class EstoqueRepository {
     constructor() {
-        this.exemplares = [];
         this.createTable();
     }
     static getInstance() {

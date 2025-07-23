@@ -44,7 +44,7 @@ export class LivroRepository {
                 livro.editora,
                 livro.edicao,
                 livro.categoria,
-                'disponivel'
+                "disponivel"
             ]);
         
             console.log("Livro criado com Sucesso: ", resultado);
@@ -57,7 +57,7 @@ export class LivroRepository {
             livro.editora,
             livro.edicao,
             livro.categoria,
-            'disponivel'
+            "disponivel"
         );
     }
     

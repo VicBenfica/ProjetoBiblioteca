@@ -1,5 +1,4 @@
 import { CategoriaUsuarioService } from "../service/CategoriaUsuarioService";
-import { Request, Response } from "express";
 import { Body, Controller, Delete, Get, Path, Post, Put, Query, Res, Route, Tags, TsoaResponse } from "tsoa";
 import { BasicResponseDto } from "../model/dto/BasicResponseDto";
 //importa a DTO
@@ -14,7 +13,7 @@ export class CategoriaUsuarioController extends Controller{
         @Res() success: TsoaResponse<201, BasicResponseDto>
     ): Promise<void>{
         try{
-            const lista = await this.categoriaUsuarioService.listarCategorias();
+            const lista = await this.categoriaUsuarioService.listarUsuarios();
             return success(201, new BasicResponseDto("Lista de Categorias de Usuário: ", lista));
         } catch(err: any){
             return fail(400, new BasicResponseDto(err.message, undefined));

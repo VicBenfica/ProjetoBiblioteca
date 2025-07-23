@@ -6,11 +6,11 @@ class UsuarioDto {
         if (!nome || !cpf || !email || !categoria || !curso) {
             throw new Error("Por favor informar todos os campos");
         }
-        this.nome = nome || '';
+        this.nome = nome || "";
         this.cpf = this.meuCPF(cpf);
-        this.email = email || '';
-        this.categoria = categoria || '';
-        this.curso = curso || '';
+        this.email = email || "";
+        this.categoria = categoria || "";
+        this.curso = curso || "";
         this.status = "ativo";
         this.diasSuspensao = 0 || 0;
         this.livrosAtrasados = 0 || 0;

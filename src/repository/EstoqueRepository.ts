@@ -3,7 +3,6 @@ import { EstoqueEntity } from '../model/entity/EstoqueEntity';
 
 export class EstoqueRepository {
     private static instance: EstoqueRepository;
-    private exemplares: EstoqueEntity[] = [];
 
     private constructor() {
         this.createTable();

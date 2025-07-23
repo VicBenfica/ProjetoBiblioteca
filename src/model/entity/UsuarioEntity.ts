@@ -5,7 +5,7 @@ export class UsuarioEntity{
     email: string;
     categoria: string;
     curso: string;
-    status?: 'ativo' | 'inativo' | 'suspenso';
+    status?: "ativo" | "inativo" | "suspenso";
     diasSuspensao: number;
     livrosAtrasados: number;
     diasAtraso: number;

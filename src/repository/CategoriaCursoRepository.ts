@@ -8,12 +8,13 @@ export class CategoriaCursoRepository {
 
     private constructor() {
         this.criarTable();
-        
+       
     }
 
     public static getInstance() {
         if (!this.instance) {
             this.instance = new CategoriaCursoRepository;
+            this.inserirCategoriasPadrao();
         }
         return this.instance;
     }
@@ -34,7 +35,7 @@ export class CategoriaCursoRepository {
         }
     }
 
-    public async inserirCategoriasPadrao() {
+    public static async inserirCategoriasPadrao() {
         const categorias = ["ADS", "Pedagogia", "Administração"];
         await executarComandoSQL("CREATE TABLE IF NOT EXISTS biblioteca.CategoriaCurso (id INT AUTO_INCREMENT PRIMARY KEY, nome VARCHAR(100) NOT NULL)", []);
         for (const nome of categorias) {

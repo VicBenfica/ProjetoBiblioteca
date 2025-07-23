@@ -4,7 +4,7 @@ export class UsuarioDto{
     email: string;
     categoria: string;
     curso: string;
-    status?: 'ativo' | 'inativo' | 'suspenso';
+    status?: "ativo" | "inativo" | "suspenso";
     diasSuspensao?: number;
     livrosAtrasados?: number;
     diasAtraso?: number;
@@ -15,11 +15,11 @@ export class UsuarioDto{
             throw new Error("Por favor informar todos os campos");
         }
         
-        this.nome = nome || '';
+        this.nome = nome || "";
         this.cpf = this.meuCPF(cpf);
-        this.email = email || '';
-        this.categoria = categoria || '';
-        this.curso = curso || '';
+        this.email = email || "";
+        this.categoria = categoria || "";
+        this.curso = curso || "";
         this.status = "ativo";
         this.diasSuspensao = 0 || 0;
         this.livrosAtrasados = 0 || 0;

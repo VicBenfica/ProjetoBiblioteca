@@ -40,10 +40,10 @@ class LivroRepository {
             livro.editora,
             livro.edicao,
             livro.categoria,
-            'disponivel'
+            "disponivel"
         ]);
         console.log("Livro criado com Sucesso: ", resultado);
-        return new LivroEntity_1.LivroEntity(resultado.insertId, livro.titulo, livro.isbn, livro.autor, livro.editora, livro.edicao, livro.categoria, 'disponivel');
+        return new LivroEntity_1.LivroEntity(resultado.insertId, livro.titulo, livro.isbn, livro.autor, livro.editora, livro.edicao, livro.categoria, "disponivel");
     }
     validacaoISBN(isbn) {
         return isbn.toString().length === 13;

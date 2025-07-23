@@ -24,7 +24,7 @@ let CategoriaLivroController = class CategoriaLivroController extends tsoa_1.Con
     }
     async listarCategoriaLivro(fail, success) {
         try {
-            const lista = await this.categoriaLivroService.listarCategoriaLivro();
+            const lista = await this.categoriaLivroService.listarLivros();
             return success(200, new BasicResponseDto_1.BasicResponseDto("Categorias de Livro Disponiveis", lista));
         }
         catch (err) {

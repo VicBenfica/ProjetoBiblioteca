@@ -18,6 +18,6 @@ export class LivroDto{
         this.editora = editora;
         this.edicao = edicao;
         this.categoria = categoria;
-        this.status = 'disponivel';
+        this.status = "disponivel";
     }
 }

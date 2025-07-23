@@ -5,7 +5,6 @@ const EmprestimoEntity_1 = require("../model/entity/EmprestimoEntity");
 const mysql_1 = require("../database/mysql");
 class EmprestimoRepository {
     constructor() {
-        this.emprestimos = [];
         this.createTable();
     }
     static getInstance() {
@@ -45,7 +44,7 @@ class EmprestimoRepository {
             null,
             emprestimo.calcularDataDevolucao(),
             emprestimo.diasRestantesEmprestimo(),
-            'ativo',
+            "ativo",
             emprestimo.calcularDiasAtraso(),
             emprestimo.calcularDiasSuspensao()
         ]);

@@ -3,7 +3,7 @@ export class EstoqueEntity{
     isbn: string;
     quantidade: number;
     quantidade_emprestada: number;
-    disponibilidade: 'disponivel' | 'emprestado';
+    disponibilidade: "disponivel" | "emprestado";
 
     constructor(id?: number, isbn?: string, quantidade?: number, quantidade_emprestada?: number){
         if(!isbn || !quantidade){
@@ -13,6 +13,6 @@ export class EstoqueEntity{
         this.isbn = isbn;
         this.quantidade = quantidade;
         this.quantidade_emprestada = quantidade_emprestada || 0;
-        this.disponibilidade = 'disponivel';
+        this.disponibilidade = "disponivel";
     }
 }

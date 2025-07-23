@@ -6,8 +6,8 @@ class CategoriaUsuarioService {
     constructor() {
         this.categoriaUsuarioRepository = CategoriaUsuarioRepository_1.CategoriaUsuarioRepository.getInstance();
     }
-    async listarCategorias() {
-        return await this.categoriaUsuarioRepository.listarCategoria();
+    listarUsuarios() {
+        return this.categoriaUsuarioRepository.listarCategoria();
     }
 }
 exports.CategoriaUsuarioService = CategoriaUsuarioService;

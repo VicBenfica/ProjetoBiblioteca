@@ -6,7 +6,7 @@ export class EstoqueService{
     private estoqueRepository = EstoqueRepository.getInstance();
     private livroRepository = LivroRepository.getInstance();
 
-    async novoLivronoEstoque(data: any): Promise<EstoqueEntity>{
+    async novoLivroEstoque(data: any): Promise<EstoqueEntity>{
         const livroExistente = await this.livroRepository.filtraLivroPorISBN(data.isbn);
 
         if(!livroExistente) {

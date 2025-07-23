@@ -10,6 +10,7 @@ class CategoriaLivroRepository {
     static getInstance() {
         if (!this.instance) {
             this.instance = new CategoriaLivroRepository;
+            this.inserirCategoriasPadrao();
         }
         return this.instance;
     }

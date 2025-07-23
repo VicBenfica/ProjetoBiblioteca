@@ -19,6 +19,6 @@ export class LivroEntity{
         this.editora = editora;
         this.edicao = edicao;
         this.categoria = categoria;
-        this.status = status || '';
+        this.status = status || "";
     }
 }

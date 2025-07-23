@@ -24,7 +24,7 @@ let EstoqueController = class EstoqueController extends tsoa_1.Controller {
     }
     async adicionarLivroNoEstoque(dto, fail, success) {
         try {
-            const livro = await this.estoqueService.novoLivronoEstoque(dto);
+            const livro = await this.estoqueService.novoLivroEstoque(dto);
             return success(200, new BasicResponseDto_1.BasicResponseDto("Livro adicionado com sucesso no seu estoque!", livro));
         }
         catch (err) {

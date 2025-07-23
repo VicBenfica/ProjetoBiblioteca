@@ -3,7 +3,6 @@ import { executarComandoSQL } from "../database/mysql";
 
 export class EmprestimoRepository {
     private static instance: EmprestimoRepository;
-    private emprestimos: EmprestimoEntity[] = [];
 
 
     private constructor() {
@@ -52,7 +51,7 @@ export class EmprestimoRepository {
                 null,
                 emprestimo.calcularDataDevolucao(),
                 emprestimo.diasRestantesEmprestimo(),
-                'ativo',
+                "ativo",
                 emprestimo.calcularDiasAtraso(),
                 emprestimo.calcularDiasSuspensao()
             ]);

@@ -1,5 +1,4 @@
 import { CategoriaCursoService } from "../service/CategoriaCursoService";
-import { Request, Response } from "express";
 import { Controller, Get, Res, Route, Tags, TsoaResponse } from "tsoa";
 import { BasicResponseDto } from "../model/dto/BasicResponseDto";
 //importa a DTO que será usada para padronizar a API

@@ -8,7 +8,7 @@ class EstoqueService {
         this.estoqueRepository = EstoqueRepository_1.EstoqueRepository.getInstance();
         this.livroRepository = LivroRepository_1.LivroRepository.getInstance();
     }
-    async novoLivronoEstoque(data) {
+    async novoLivroEstoque(data) {
         const livroExistente = await this.livroRepository.filtraLivroPorISBN(data.isbn);
         if (!livroExistente) {
             throw new Error("Não é possível adicionar um exemplar de um livro que não está cadastrado. Por favor, cadastre o livro primeiro.");
